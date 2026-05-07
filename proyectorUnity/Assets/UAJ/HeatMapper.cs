@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class HeatMapper : EditorWindow {
 
+    private int _selectedMapType = 0;
+
     [Header("VISUALIZAR")]
     bool ver;
 
@@ -18,8 +20,12 @@ public class HeatMapper : EditorWindow {
         GetWindow(typeof(HeatMapper));
     }
 
-    private void OnGUI() {
+    private void OnEnable()
+    {
         _heatMapConfigs = new MapConfig[0];
+    }
+
+    private void OnGUI() {
 
         var style = new GUIStyle(EditorStyles.boldLabel)
         {
@@ -28,22 +34,50 @@ public class HeatMapper : EditorWindow {
         EditorGUILayout.LabelField("HEATMAPPER", style);
 
         if (GUILayout.Button("Add Tracker To Scene"))
-        {
             AddTracker();
-        }
 
         mapBaseName = EditorGUILayout.TextField("Base Name", mapBaseName);
 
-        foreach (MapConfig m in _heatMapConfigs)
+        EditorGUILayout.Space();
+        EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+
+        EditorGUILayout.BeginHorizontal();
+
+        if (GUILayout.Button("Add Map"))
+            AddMap();
+        _selectedMapType = EditorGUILayout.Popup(
+            (int) _selectedMapType,
+            System.Enum.GetNames(typeof(TrackEventType))
+        );
+
+        EditorGUILayout.EndHorizontal();
+
+        for (int i = _heatMapConfigs.Length - 1; i >= 0; i--)
         {
-            m.visible = EditorGUILayout.Toggle(m.visible);
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            MapConfig m = _heatMapConfigs[i];
+
+            EditorGUILayout.Space();
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(m.GetType().Name, EditorStyles.boldLabel);
+            bool deleted = GUILayout.Button("✕");
+            EditorGUILayout.EndHorizontal();
+            
+            if (deleted)
+            {
+                ArrayUtility.RemoveAt(ref _heatMapConfigs, i);
+                EditorGUILayout.EndVertical();
+                continue;
+            }
+
+            m.visible = EditorGUILayout.Toggle("Visible", m.visible);
             m.mapName = EditorGUILayout.TextField("Map Name", m.mapName);
-            m.tr = EditorGUILayout.ObjectField("Transform to Register", m.tr, typeof(Transform), false) as Transform;
+            m.tr = EditorGUILayout.ObjectField("Transform to Register", m.tr, typeof(Transform), true) as Transform;
+        
+            EditorGUILayout.EndVertical();
         }
 
-        if (GUILayout.Button("AddMap")) {
-            _heatMapConfigs.Append<MapConfig>(new MapConfig());
-        }
+        EditorGUILayout.EndVertical();
     }
 
     private void AddTracker()
@@ -52,5 +86,26 @@ public class HeatMapper : EditorWindow {
         {
             new GameObject("HeatMapper");
         }
+    }
+
+    private void AddMap()
+    {
+        MapConfig newConfig;
+        switch ((TrackEventType)_selectedMapType)
+        { // assign chosen type
+            case TrackEventType.Transform:
+                newConfig = new TransformConfig();
+                break;
+            case TrackEventType.InputKey:
+                newConfig = new InputKeyConfig();
+                break;
+            case TrackEventType.InputMouse:
+                newConfig = new InputMouseConfig();
+                break;
+            default:
+                newConfig = new MapConfig();
+                break;
+        }
+        ArrayUtility.Add(ref _heatMapConfigs, newConfig);
     }
 }

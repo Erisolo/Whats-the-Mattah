@@ -17,7 +17,8 @@ public class MapConfig
 }
 
 public class TransformConfig : MapConfig{}
-public class InputKeyConfig{
+public class InputKeyConfig : MapConfig
+{
     char key;
 }
-public class InputMouseConfig{}
+public class InputMouseConfig : MapConfig { }
