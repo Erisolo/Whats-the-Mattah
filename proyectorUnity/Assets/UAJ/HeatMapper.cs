@@ -82,9 +82,9 @@ public class HeatMapper : EditorWindow {
 
     private void AddTracker()
     {
-        if (GameObject.Find("HeatMapper") == null)
-        {
-            new GameObject("HeatMapper");
+        if (GameObject.Find("HeatMapper") == null) {
+            GameObject hm = new GameObject("HeatMapper");
+            hm.AddComponent<HeatMapArea>();
         }
     }
 
