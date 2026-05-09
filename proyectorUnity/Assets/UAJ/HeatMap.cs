@@ -26,4 +26,10 @@ public class HeatMap {
     public void addHeatValue(Vector2Int tile, int value = 1) {
         heatMap[tile.x, tile.y] += value;
     }
+
+    public Vector2Int worldToTile(Vector2 worldpoint) {
+        return new Vector2Int(
+            (int)((worldpoint.x - _position.x) / _tileSize),
+            (int)((worldpoint.y - _position.y) / _tileSize));
+    }
 }
