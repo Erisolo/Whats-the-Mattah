@@ -1,22 +1,29 @@
-public class HeatMap {
-    // valore para inicializar el tilemap
-    private int _width;
-    private int _height;
-    private float _tileSize;
+using UnityEngine;
 
-    // aqui iran los valores de cada tile del tilemap de calor con mas fecuencia d un valor o no
+public class HeatMap {
+    private int _width;        // anchura en casillas del heatmap
+    private int _height;       // altura en casillas del hatmap
+    private float _tileSize;   // tmanio de cada tile del heatmap
+    private Vector2 _position; // posicion del heatmap (desde alguna esquina)
+
+    // valores de cada casilla, supongo k a mas valor mas calor?
     public int[,] heatMap;
 
     public int getWidth() { return _width; }
     public int getHeight() { return _height; }
     public float getTileSize() { return _tileSize; }
+    public Vector2 getPosition() { return _position; }
+    public int getHeatMapValue(int x, int y) { return heatMap[x,y]; }
 
-    public HeatMap(int w, int h, float tileSize) {
-        _width = w; _height = h; _tileSize = tileSize;
+    public HeatMap(int w, int h, float tileSize, Vector2 pos) {
+        _width = w; _height = h; _tileSize = tileSize; _position = pos;
 
         heatMap = new int[_width, _height];
     }
 
-    // TODO hay k investigar como ir llenando el tilemap de cosas si desde aki o desde fuera y 
-    // tb hay k saber como llenarlo y como representarlo.
+    // aniadimos puntos de calor al mapa en la posicion especificada.
+    // x : [0, _width-1] // y : [0, _height-1]
+    public void addHeatValue(Vector2Int tile, int value = 1) {
+        heatMap[tile.x, tile.y] += value;
+    }
 }
