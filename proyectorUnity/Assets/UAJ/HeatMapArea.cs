@@ -1,12 +1,14 @@
-using Unity.VisualScripting;
 using UnityEngine;
 
+// IMPORTANTE TENER EN CUENTA K LO ESTOY HACIENDO EL ORIGEN EN TOPLEFY Y LA X VA HACIA LA DERECHA Y LA Y VA HACIA ABAJO GRACIAS
+
 public class HeatMapArea : MonoBehaviour {
-    [SerializeField] private Vector2Int _areaSize = new Vector2Int(50, 50); // (width/height) en caso de necesitar menos k pantalla
     [SerializeField] private float _tileSize = 1.0f; // tamanio de cada tile del heatmap
 
+    #region TODO BORRAR LUEGO TESTEO
     // vamos a trakear por ejemplo el transform de algun objeto d escena, luego imagino k cambiar
     [SerializeField] private Transform _testTransform;
+    #endregion
 
     private HeatMap _heatMap; 
 
@@ -15,7 +17,7 @@ public class HeatMapArea : MonoBehaviour {
         float screenHeight = maincam.orthographicSize * 2.0f; // alto camara
         float screenWidth = screenHeight * maincam.aspect; // ancho camara
         // esquina arriba izquierda
-        Vector2 bottomleft = new Vector2(
+        Vector2 topleft = new Vector2(
             (maincam.transform.position.x - screenWidth / 2.0f),
             (maincam.transform.position.y + screenHeight / 2.0f) - _tileSize
         );
@@ -24,11 +26,13 @@ public class HeatMapArea : MonoBehaviour {
         int h = (int)(screenHeight / _tileSize);
 
         // crea el objeto tilemap
-        _heatMap = new HeatMap(w, h, _tileSize, bottomleft);
+        _heatMap = new HeatMap(w, h, _tileSize, topleft);
     }
 
     private void Update() {
-        _heatMap.addHeatValue(_heatMap.worldToTile(_testTransform.position));
+        if(_testTransform != null) {
+            _heatMap.addHeatValue(_heatMap.worldToTile(_testTransform.position));
+        }
     }
 
     // para ver cuadricula y k se ponga el calor en rojo segun el alpha
@@ -38,7 +42,6 @@ public class HeatMapArea : MonoBehaviour {
     }
 
     private void drawTileMap() {
-
         for(int i = 0; i < _heatMap.getWidth(); ++i) {
             for (int j = 0; j < _heatMap.getHeight(); ++j) {
                 Vector2 tilePos = new Vector2(
@@ -59,6 +62,29 @@ public class HeatMapArea : MonoBehaviour {
     }
 
     private void drawHeatMap() {
+        for (int i = 0; i < _heatMap.getWidth(); ++i) {
+            for (int j = 0; j < _heatMap.getHeight(); ++j) {
+                int heatvalue = _heatMap.getHeatMapValue(i, j);
 
+                // si hay valor le va ajustando el alfa y si hay mas calor mas rojo se pone
+                if (heatvalue > 0) {
+                    float alphavalue = heatvalue * 0.01f; // TODO ajustar si hace falta
+
+                    // cada vez mas alpha
+                    Gizmos.color = new Color(1.0f, 0.0f, 0.0f, alphavalue);
+
+                    // copiado del metodo d antes.
+                    Vector2 tilePos = new Vector2(
+                        _heatMap.getPosition().x + i * _tileSize,
+                        _heatMap.getPosition().y - j * _tileSize
+                    );
+
+                    Gizmos.DrawCube(
+                        new Vector3(tilePos.x, tilePos.y, 0) + Vector3.one * (_tileSize / 2.0f),
+                        Vector3.one * _tileSize
+                    );
+                }
+            }
+        }
     }
 }

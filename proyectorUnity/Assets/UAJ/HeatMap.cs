@@ -1,5 +1,7 @@
 using UnityEngine;
+using UnityEngine.UIElements;
 
+// IMPORTANTE TENER EN CUENTA K LO ESTOY HACIENDO EL ORIGEN EN TOPLEFY Y LA X VA HACIA LA DERECHA Y LA Y VA HACIA ABAJO GRACIAS
 public class HeatMap {
     private int _width;        // anchura en casillas del heatmap
     private int _height;       // altura en casillas del hatmap
@@ -30,6 +32,7 @@ public class HeatMap {
     public Vector2Int worldToTile(Vector2 worldpoint) {
         return new Vector2Int(
             (int)((worldpoint.x - _position.x) / _tileSize),
-            (int)((worldpoint.y - _position.y) / _tileSize));
+            (int)((_position.y - worldpoint.y) / _tileSize)
+        );
     }
 }
