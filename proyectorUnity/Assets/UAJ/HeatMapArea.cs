@@ -31,26 +31,26 @@ public class HeatMapArea : MonoBehaviour {
 
     private void Update() {
         if(_testTransform != null) {
-            _heatMap.addHeatValue(_heatMap.worldToTile(_testTransform.position));
+            _heatMap.AddHeatMapValue(_heatMap.WorldToTile(_testTransform.position));
         }
     }
 
     // para ver cuadricula y k se ponga el calor en rojo segun el alpha
     private void OnDrawGizmos() {
-        drawTileMap();
-        drawHeatMap();
+        DrawTileMap();
+        DrawHeatMap();
     }
 
-    private void drawTileMap() {
-        for(int i = 0; i < _heatMap.getWidth(); ++i) {
-            for (int j = 0; j < _heatMap.getHeight(); ++j) {
+    private void DrawTileMap() {
+        for(int i = 0; i < _heatMap.GetWidth(); ++i) {
+            for (int j = 0; j < _heatMap.GetHeight(); ++j) {
                 Vector2 tilePos = new Vector2(
-                    _heatMap.getPosition().x + i * _tileSize,
-                    _heatMap.getPosition().y - j * _tileSize
+                    _heatMap.GetPosition().x + i * _tileSize,
+                    _heatMap.GetPosition().y - j * _tileSize
                 );
 
                 // el origen lo pone rosa para saber cual es
-                if (tilePos == _heatMap.getPosition()) Gizmos.color = Color.magenta;
+                if (tilePos == _heatMap.GetPosition()) Gizmos.color = Color.magenta;
                 else Gizmos.color = Color.white;
 
                 Gizmos.DrawWireCube(
@@ -61,10 +61,10 @@ public class HeatMapArea : MonoBehaviour {
         }
     }
 
-    private void drawHeatMap() {
-        for (int i = 0; i < _heatMap.getWidth(); ++i) {
-            for (int j = 0; j < _heatMap.getHeight(); ++j) {
-                int heatvalue = _heatMap.getHeatMapValue(i, j);
+    private void DrawHeatMap() {
+        for (int i = 0; i < _heatMap.GetWidth(); ++i) {
+            for (int j = 0; j < _heatMap.GetHeight(); ++j) {
+                int heatvalue = _heatMap.GetHeatMapValue(i, j);
 
                 // si hay valor le va ajustando el alfa y si hay mas calor mas rojo se pone
                 if (heatvalue > 0) {
@@ -75,8 +75,8 @@ public class HeatMapArea : MonoBehaviour {
 
                     // copiado del metodo d antes.
                     Vector2 tilePos = new Vector2(
-                        _heatMap.getPosition().x + i * _tileSize,
-                        _heatMap.getPosition().y - j * _tileSize
+                        _heatMap.GetPosition().x + i * _tileSize,
+                        _heatMap.GetPosition().y - j * _tileSize
                     );
 
                     Gizmos.DrawCube(
