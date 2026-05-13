@@ -1,15 +1,18 @@
-﻿using System.Linq;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
-
-// Herramienta
-// Ventana del editor, tracker, configuraciones, visualizador, generacion de mapas, guardado de sesiones, combinacion de heatmaps
-// Usuario puede crear un tracker en la escena, seleccionar un area, añadir heatmaps, elegir objetos a trackear, elegir eventos, visualizar mapas generados
 
 // HeatMapConfig; configuracion de cada heatmap
 // HeatMapData: Dato guardados de un heatmap
 // HeatMapCell: Informacion de una celda
 // HeatMapVisualizer: Dibuja los heatmaps en la escena
+
+// Ventana principal de la herramienta HeatMapper
+// Permite crear un HeatMapperTracker en la escena y configurar:
+// - Area de tracking
+// - Tamanio de casilla
+// - Heatmaps a generar
+// - Tipo de evento de cada heatmap
+// - Objeto o input asocaido
 public class HeatMapper : EditorWindow {
 
     private int _selectedMapType = 0;
@@ -18,12 +21,18 @@ public class HeatMapper : EditorWindow {
     bool ver;
 
     [Header("CREAR")]
+
+    // Tracker actual seleccionado. 
+    // Componente de la escena que realizara el tracking durante Play Mode
     private HeatMapperTracker selectedTracker;
+
+    // Nombre base al crear nuevos heatmaps
     string mapBaseName = "";
 
     MapConfig[] _heatMapConfigs;
     //private List<MapConfig> _heatMapConfigs = new List<MapConfig> ();
 
+    // Aniade la ventana al menu superior de Unity. Tools > HeatMapper
     [MenuItem("Tools/HeatMapper")]
     public static void ShowWindow() {
         //GetWindow(typeof(HeatMapper));
@@ -50,6 +59,7 @@ public class HeatMapper : EditorWindow {
 
         EditorGUILayout.Space();
 
+        // Campo para seleccionar manualmente un HeatMapperTracker existente en la escena
         selectedTracker = EditorGUILayout.ObjectField(
             "Tracker",
             selectedTracker,
@@ -71,6 +81,8 @@ public class HeatMapper : EditorWindow {
 
         DrawHeatMapConfigs();
 
+        // Si se ha modificado algo en la ventana, se marca el tracker como modificado
+        // y se fuerza el repintado en la Scene View
         if (GUI.changed)
         {
             EditorUtility.SetDirty(selectedTracker);
@@ -126,6 +138,8 @@ public class HeatMapper : EditorWindow {
         //}
     }
 
+    // Crea un objeto HeatMapper en la escena si no existe
+    // Si existe, lo selecciona y se asegura de que tenga un HeatMapperTracker
     private void AddTracker()
     {
         //if (GameObject.Find("HeatMapper") == null) {
@@ -154,6 +168,8 @@ public class HeatMapper : EditorWindow {
         Selection.activeGameObject = gameObject;
     }
 
+    // Dibuja los campos generales del area de tracking:
+    // tamanio total del area y tamanio de cada casilla
     private void DrawTrackerSettings()
     {
 
@@ -164,6 +180,7 @@ public class HeatMapper : EditorWindow {
         selectedTracker.areaSize = EditorGUILayout.Vector2Field("Area Size", selectedTracker.areaSize);
         selectedTracker.cellSize = EditorGUILayout.FloatField("Cell Size", selectedTracker.cellSize);
 
+        // Evitar que el tamanio de casilla sea 0 o negativo
         if (selectedTracker.cellSize <= 0f)
         {
             selectedTracker.cellSize = 0.1f;
@@ -172,6 +189,8 @@ public class HeatMapper : EditorWindow {
        // EditorUtility.SetDirty(selectedTracker);
     }
 
+    // Dibuja la lista de heatmaps configurados en el tracker.
+    // Se pueden aniadir, eliminar y modificar mapas
     private void DrawHeatMapConfigs()
     {
         EditorGUILayout.LabelField("Heatmaps", EditorStyles.boldLabel);
