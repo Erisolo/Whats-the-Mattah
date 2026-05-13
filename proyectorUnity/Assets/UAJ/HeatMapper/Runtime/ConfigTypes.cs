@@ -1,17 +1,23 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 // Tipos de eventos que puede registrar HeatMapper
 public enum TrackEventType
 {
-    Transform,  // Registra periodicamente la posicion de un Transform
-    InputKey,   // Registra la posicion del Transform cuando se pulsa una tecla concreta
+    Transform, // Registra periodicamente la posicion de un Transform
+    InputKey, // Registra la posicion del Transform cuando se pulsa una tecla concreta
     InputMouse, // Registra la posicion del raton en el mundo cuando se hace click
-    Custom
+    Custom,
+    ListTransform
+}
+public enum MouseButton
+{
+    Left = 0,
+    Right = 1,
+    Middle = 2
 }
 
-// Configuracion de un heatmap: evento a trackear, objeto asociado, configuracion visual
 [Serializable]
 public class MapConfig
 {
@@ -31,6 +37,9 @@ public class MapConfig
     // Tecla que se debe pulsar para registrar el evento (eventype = inputkey)
     public KeyCode inputKey = KeyCode.Space;
 
+    public MouseButton mouseButton = MouseButton.Left;
+
+    public List<Transform> transformList = new List<Transform>();
     // Color con el que se dibujara este heatmap
     public Color color = new Color(1.0f, 0f, 0f, 0.35f);
 

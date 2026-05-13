@@ -222,19 +222,47 @@ public class HeatMapper : EditorWindow {
             config.visible = EditorGUILayout.Toggle("Visible", config.visible);
             config.mapName = EditorGUILayout.TextField("Map Name", config.mapName);
             config.eventType =(TrackEventType)EditorGUILayout.EnumPopup("Event Type", config.eventType);
+            config.color = EditorGUILayout.ColorField("Color",config.color);
+            config.sampleInterval = EditorGUILayout.FloatField("Sample Interval", config.sampleInterval);
+           
+            if(config.sampleInterval <= 0f)
+            {
+                config.sampleInterval = 0.01f;
+            }
 
-            if (config.eventType == TrackEventType.Transform || config.eventType == TrackEventType.InputKey)
+            if (config.eventType == TrackEventType.Transform)
             {
                 config.tr = EditorGUILayout.ObjectField("Transform to Register", config.tr, typeof(Transform), true) as Transform;
             }
             if (config.eventType == TrackEventType.InputKey)
             {
+                config.tr = EditorGUILayout.ObjectField("Transform to Register", config.tr, typeof(Transform), true) as Transform;
                 config.inputKey = (KeyCode)EditorGUILayout.EnumPopup("Input Key", config.inputKey);
             }
-
-            config.color = EditorGUILayout.ColorField("Color", config.color);
-            config.sampleInterval = EditorGUILayout.FloatField("Sample Interval", config.sampleInterval);
-
+            if(config.eventType == TrackEventType.InputMouse)
+            {
+                config.mouseButton = (MouseButton)EditorGUILayout.EnumPopup("Mouse Button", config.mouseButton);
+            }
+            if (config.eventType == TrackEventType.ListTransform)
+            {
+                EditorGUILayout.LabelField("Transforms", EditorStyles.miniBoldLabel);
+                for (int t = 0; t < config.transformList.Count; t++)
+                {
+                    EditorGUILayout.BeginHorizontal();
+                    config.transformList[t] = EditorGUILayout.ObjectField(config.transformList[t], typeof(Transform), true) as Transform;
+                    if (GUILayout.Button("-", GUILayout.Width(22)))
+                    {
+                        config.transformList.RemoveAt(t);
+                        EditorGUILayout.EndHorizontal();
+                        break;
+                    }
+                    EditorGUILayout.EndHorizontal();
+                }
+                if(GUILayout.Button("+ Add Transform"))
+                {
+                    config.transformList.Add(null);
+                }
+            }
             if (config.sampleInterval <= 0f)
             {
                 config.sampleInterval = 0.01f;

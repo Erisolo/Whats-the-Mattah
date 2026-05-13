@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 // Componente principal que se coloca en la escena. Se encarga de:
@@ -64,7 +64,11 @@ public class HeatMapperTracker : MonoBehaviour
                     TrackMouse(config);
                     break;
 
-                    // custom
+                case TrackEventType.ListTransform:
+                    TrackListTransform(config); 
+                    break;
+
+                // custom
             }
         }
     }
@@ -126,7 +130,7 @@ public class HeatMapperTracker : MonoBehaviour
     // Registra la posicion del raton en el mundo cuando se hace click izquierdo
     private void TrackMouse (MapConfig config)
     {
-        if (!Input.GetMouseButtonDown(0)) return;   
+        if (!Input.GetMouseButtonDown((int)config.mouseButton)) return;   
 
         Camera camera = Camera.main;
         if (camera == null) return;
@@ -136,7 +140,19 @@ public class HeatMapperTracker : MonoBehaviour
 
         RegisterPosition(config.mapName, mouseWorld);
     }
+    private void TrackListTransform(MapConfig config)
+    {
+        if (config.transformList == null || config.transformList.Count == 0) return;
 
+        _timers[config.mapName] += Time.deltaTime;
+        if (_timers[config.mapName] < config.sampleInterval) return;
+        _timers[config.mapName] = 0f;
+        foreach (Transform t in config.transformList)
+        {
+            if (t != null) continue;
+            RegisterPosition(config.mapName, t.position);
+        }
+    }
     // Permite registrar un evento manualmente desde otro script
     public void RegisterCustomEvent(string mapName, Vector3 worldPosition)
     {
