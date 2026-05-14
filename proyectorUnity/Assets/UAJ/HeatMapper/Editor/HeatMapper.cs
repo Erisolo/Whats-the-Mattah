@@ -181,14 +181,14 @@ public class HeatMapper : EditorWindow {
 
         // mira si tiene el componente y si no se lo pone
         HeatmapVisualizer hmVisualizer = hmvGO.GetComponent<HeatmapVisualizer>();
-        if(hmVisualizer == null) hmVisualizer.AddComponent<HeatmapVisualizer>();
+        if(hmVisualizer == null) hmVisualizer = hmvGO.AddComponent<HeatmapVisualizer>();
 
         // mira si tiene grid y si no se lo pone
         Grid grid = hmvGO.GetComponentInChildren<Grid>();
         if (grid == null) {
             GameObject gGO = new GameObject("Grid");
             gGO.transform.SetParent(hmvGO.transform);
-            gGO.AddComponent<Grid>();
+            grid = gGO.AddComponent<Grid>();
         }
         hmVisualizer.setGrid(grid);
 
