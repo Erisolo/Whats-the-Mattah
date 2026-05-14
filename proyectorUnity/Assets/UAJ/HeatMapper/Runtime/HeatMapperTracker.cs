@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 // Componente principal que se coloca en la escena. Se encarga de:
@@ -82,6 +83,12 @@ public class HeatMapperTracker : MonoBehaviour
 
                 // custom
             }
+
+            // actualiza el visualizer (lo del tilemap)
+            if (heatMapVisualizer != null) {
+                // updatea los tilemaps segun el heatmap del dictionarty y el config
+                heatMapVisualizer.updateTileMap(_heatMaps[config.mapName], config);
+            }
         }
     }
 
@@ -152,6 +159,7 @@ public class HeatMapperTracker : MonoBehaviour
 
         RegisterPosition(config.mapName, mouseWorld);
     }
+    
     private void TrackListTransform(MapConfig config)
     {
         if (config.transformList == null || config.transformList.Count == 0) return;
@@ -159,12 +167,11 @@ public class HeatMapperTracker : MonoBehaviour
         _timers[config.mapName] += Time.deltaTime;
         if (_timers[config.mapName] < config.sampleInterval) return;
         _timers[config.mapName] = 0f;
-        foreach (Transform t in config.transformList)
-        {
-            if (t != null) continue;
-            RegisterPosition(config.mapName, t.position);
+        foreach (Transform t in config.transformList) {
+            if (t != null) RegisterPosition(config.mapName, t.position);
         }
     }
+    
     // Permite registrar un evento manualmente desde otro script
     public void RegisterCustomEvent(string mapName, Vector3 worldPosition)
     {
@@ -191,32 +198,6 @@ public class HeatMapperTracker : MonoBehaviour
         //    _heatMaps[mapName][cell] = 0;
 
         //_heatMaps[mapName][cell]++;
-    }
-
-    private Vector2Int WorldToCell(Vector3 worldPosition)
-    {
-        Vector3 localPosition = worldPosition - transform.position;
-
-        int x = Mathf.FloorToInt((localPosition.x + areaSize.x / 2f) / cellSize);
-        int y = Mathf.FloorToInt((localPosition.y + areaSize.y / 2f) / cellSize);
-
-        return new Vector2Int(x, y);
-    }
-
-    private Vector3 CellToWorld(Vector2Int cell)
-    {
-        float x = transform.position.x - areaSize.x / 2f + cell.x * cellSize + cellSize / 2f;
-        float y = transform.position.y - areaSize.y / 2f + cell.y * cellSize + cellSize / 2f;
-
-        return new Vector3(x, y, transform.position.z);
-    }
-
-    private bool IsInsideArea(Vector2Int cell)
-    {
-        int width = Mathf.CeilToInt(areaSize.x / cellSize);
-        int height = Mathf.CeilToInt(areaSize.y / cellSize);
-
-        return cell.x >= 0 && cell.x < width && cell.y >= 0 && cell.y < height;
     }
 
     // Dibuja en la Scene View el area, la cuadricula y los heatmaps

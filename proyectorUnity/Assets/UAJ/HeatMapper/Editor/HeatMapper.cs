@@ -167,6 +167,9 @@ public class HeatMapper : EditorWindow {
         selectedTracker = gameObject.AddComponent<HeatMapperTracker>();
 
         Selection.activeGameObject = gameObject;
+
+        // crea el visualizer junto al tracker
+        AddVisualizer();
     }
 
     // aniade un objeto HeatmapVisualizer en la escena si no existe
@@ -187,6 +190,10 @@ public class HeatMapper : EditorWindow {
             gGO.transform.SetParent(hmvGO.transform);
             gGO.AddComponent<Grid>();
         }
+        hmVisualizer.setGrid(grid);
+
+        // conectamos el tracker con el visualizer
+        selectedTracker.heatMapVisualizer = hmVisualizer;
     }
 
     // Dibuja los campos generales del area de tracking:

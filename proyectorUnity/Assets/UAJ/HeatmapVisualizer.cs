@@ -5,14 +5,16 @@ using UnityEngine.Tilemaps;
 
 public class HeatmapVisualizer : MonoBehaviour {
     [SerializeField] private TileBase _tilebase;
-    [SerializeField] private Grid _grid;
+    private Grid _grid; // se asigna con el heatmapper
 
     private Dictionary<string, Tilemap> _tilemaps = new Dictionary<string, Tilemap>();
+
+    public void setGrid(Grid grid) { _grid = grid; }
 
     // crea un tilemap nuevo y lo mete al dictionary
     public void createTileMap(MapConfig config) {
         // crea un nuevo gameobject contenedor de un tilemap con su nombre con identificador y lo hace hijo de grid.
-        GameObject tmGO = new GameObject($"Tìlemap_{config.mapName}");
+        GameObject tmGO = new GameObject($"Tilemap_{config.mapName}");
         tmGO.transform.SetParent(_grid.transform);
 
         // pone los componentes
@@ -47,7 +49,7 @@ public class HeatmapVisualizer : MonoBehaviour {
 
                     // a mas calor mas alpha
                     Color color = config.color;
-                    color.a += alphavalue;
+                    color.a = alphavalue;
 
                     tilemap.SetColor(tilePos, color);
                 }

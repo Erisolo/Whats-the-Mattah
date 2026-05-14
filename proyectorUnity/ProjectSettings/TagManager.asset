@@ -50,3 +50,6 @@ TagManager:
   - name: Invernaderos
     uniqueID: 3142492989
     locked: 0
+  - name: Heatmap
+    uniqueID: 3694194805
+    locked: 0
