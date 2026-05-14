@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using static UnityEngine.Rendering.DebugUI;
 
 // Componente principal que se coloca en la escena. Se encarga de:
 // - Definir el area de tracking
@@ -39,16 +40,20 @@ public class HeatMapperTracker : MonoBehaviour
     {
         // Generar los mapas segun configuraciones
         GenerateHeatMaps();
-        //foreach (MapConfig config in heatMapConfigs) {
-        //    if (string.IsNullOrEmpty(config.mapName))
-        //        continue;
-
-        //    _heatMaps[config.mapName] = new Dictionary<Vector2Int, int>();
-        //    _timers[config.mapName] = 0f;
-        //}
-
+        
         // si hay visualizer asignado crea los tilemaps k haya
         if (heatMapVisualizer != null) {
+            Grid grid = heatMapVisualizer.GetComponentInChildren<Grid>();
+            if(grid != null ) {
+                heatMapVisualizer.setGrid(grid);
+                // Calcular la esquina superior izquierda del area de tracking
+                Vector2 topLeft = new Vector2(
+                    transform.position.x - areaSize.x / 2f,
+                    transform.position.y + areaSize.y / 2f);
+                grid.transform.position = topLeft;
+                grid.cellSize = new Vector3(cellSize, cellSize, 1.0f);
+            }
+
             // crea los tilemaps por cada config
             foreach(MapConfig config in heatMapConfigs) {
                 heatMapVisualizer.createTileMap(config);
@@ -86,8 +91,11 @@ public class HeatMapperTracker : MonoBehaviour
 
             // actualiza el visualizer (lo del tilemap)
             if (heatMapVisualizer != null) {
-                // updatea los tilemaps segun el heatmap del dictionarty y el config
-                heatMapVisualizer.updateTileMap(_heatMaps[config.mapName], config);
+                if (_heatMaps.ContainsKey(config.mapName)) { // si tiene el heatmap con el nombre en el dictionary
+                    // updatea los tilemaps segun el heatmap del dictionarty y el config
+                    heatMapVisualizer.updateTileMap(_heatMaps[config.mapName], config);
+                }
+                
             }
         }
     }
