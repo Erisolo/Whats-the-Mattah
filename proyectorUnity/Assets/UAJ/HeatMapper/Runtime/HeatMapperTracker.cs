@@ -30,6 +30,10 @@ public class HeatMapperTracker : MonoBehaviour
     // Se usan para controlar cada cuanto se registra la posicion
     private Dictionary<string, float> _timers = new Dictionary<string,float>();
 
+    [Header("Visualization")]
+
+    public HeatmapVisualizer heatMapVisualizer;
+
     private void Start()
     {
         // Generar los mapas segun configuraciones
@@ -41,6 +45,14 @@ public class HeatMapperTracker : MonoBehaviour
         //    _heatMaps[config.mapName] = new Dictionary<Vector2Int, int>();
         //    _timers[config.mapName] = 0f;
         //}
+
+        // si hay visualizer asignado crea los tilemaps k haya
+        if (heatMapVisualizer != null) {
+            // crea los tilemaps por cada config
+            foreach(MapConfig config in heatMapConfigs) {
+                heatMapVisualizer.createTileMap(config);
+            }
+        }
     }
 
     private void Update()

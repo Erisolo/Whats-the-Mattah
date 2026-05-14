@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 
 // HeatMapConfig; configuracion de cada heatmap
@@ -166,6 +167,26 @@ public class HeatMapper : EditorWindow {
         selectedTracker = gameObject.AddComponent<HeatMapperTracker>();
 
         Selection.activeGameObject = gameObject;
+    }
+
+    // aniade un objeto HeatmapVisualizer en la escena si no existe
+    // si existe, lo seleccione y se asegura que tenga un grid
+    private void AddVisualizer() {
+        // mira si ya existe y si no lo crea
+        GameObject hmvGO= GameObject.Find("HeatmapVisualizer");
+        if (hmvGO == null) hmvGO = new GameObject("HeatmapVisualizer");
+
+        // mira si tiene el componente y si no se lo pone
+        HeatmapVisualizer hmVisualizer = hmvGO.GetComponent<HeatmapVisualizer>();
+        if(hmVisualizer == null) hmVisualizer.AddComponent<HeatmapVisualizer>();
+
+        // mira si tiene grid y si no se lo pone
+        Grid grid = hmvGO.GetComponentInChildren<Grid>();
+        if (grid == null) {
+            GameObject gGO = new GameObject("Grid");
+            gGO.transform.SetParent(hmvGO.transform);
+            gGO.AddComponent<Grid>();
+        }
     }
 
     // Dibuja los campos generales del area de tracking:
