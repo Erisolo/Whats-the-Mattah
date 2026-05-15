@@ -42,11 +42,12 @@ public class HeatMapper : EditorWindow {
 
     private void OnEnable()
     {
+        FindTrackerInScene();
         _heatMapConfigs = new MapConfig[0];
     }
 
     private void OnGUI() {
-
+        FindTrackerInScene();
         GUIStyle style = new GUIStyle(EditorStyles.boldLabel)
         {
             normal = { textColor = new Color(0.95f, 0.7f, 0.84f) }
@@ -68,11 +69,19 @@ public class HeatMapper : EditorWindow {
             true
             ) as HeatMapperTracker;
 
+        // Boton de recuperacion del tracker manual.
+        if(GUILayout.Button("Find Tracker In Scene"))
+        {
+            selectedTracker = null;
+            FindTrackerInScene();
+        }
+
         if (selectedTracker == null)
         {
             EditorGUILayout.HelpBox("Selecciona o crea un HeatMapperTracker para configurar la herramienta.", MessageType.Info);
             return;
         }
+
 
         EditorGUILayout.Space();
 
@@ -139,8 +148,7 @@ public class HeatMapper : EditorWindow {
         //}
     }
 
-    // Crea un objeto HeatMapper en la escena si no existe
-    // Si existe, lo selecciona y se asegura de que tenga un HeatMapperTracker
+    // Crea o recupera un objeto HeatMapperTracker en la escena 
     private void AddTracker()
     {
         //if (GameObject.Find("HeatMapper") == null) {
@@ -148,56 +156,87 @@ public class HeatMapper : EditorWindow {
         //    hm.AddComponent<HeatMapArea>();
         //}
 
-        GameObject hm = GameObject.Find("HeatMapper");
+        // Buscar si ya existe algun HeatMapperTracker en la escena
+        // Se evita crear trackers duplicados
+#if UNITY_2023_1_OR_NEWER
+        HeatMapperTracker existingTracker = Object.FindFirstObjectByType<HeatMapperTracker>();
+#else
+        HeatMapperTracker existingTracker = Object.FindObjectOfType<HeatMapperTracker>();
+#endif
 
-        if (hm != null)
+        if (existingTracker != null)
         {
-            selectedTracker = hm.GetComponent<HeatMapperTracker>();
+            selectedTracker = existingTracker;
+            Selection.activeGameObject = existingTracker.gameObject;
 
-            if (selectedTracker == null)
-            {
-                selectedTracker = hm.AddComponent<HeatMapperTracker>();
-            }
-
-            Selection.activeGameObject = hm;
+            // Si el tracker ya existia, asegurarse de que tenga visualizer asociado
+            AddVisualizer();
             return;
         }
 
-        GameObject gameObject = new GameObject("HeatMapper");
-        selectedTracker = gameObject.AddComponent<HeatMapperTracker>();
+        // Si no existe ningun tracker, se crea un nuevo objeto en la escena
+        GameObject trackerObject = new GameObject("HeatMapperTracker");
 
-        Selection.activeGameObject = gameObject;
+        selectedTracker = trackerObject.AddComponent<HeatMapperTracker>();
 
-        // crea el visualizer junto al tracker
+        Selection.activeGameObject = trackerObject;
+
+        // Crea el visualizer junto al tracker
         AddVisualizer();
     }
 
-    // aniade un objeto HeatmapVisualizer en la escena si no existe
-    // si existe, lo seleccione y se asegura que tenga un grid
+    // Crea o recupera un HeatmapVisualizer y lo conecta con el tracker seleccionado
+    // Si existe, lo seleccione y se asegura que tenga un grid
     private void AddVisualizer() {
-        // mira si ya existe y si no lo crea
-        GameObject hmvGO= GameObject.Find("HeatmapVisualizer");
-        if (hmvGO == null) hmvGO = new GameObject("HeatmapVisualizer");
 
-        // mira si tiene el componente y si no se lo pone
-        HeatmapVisualizer hmVisualizer = hmvGO.GetComponent<HeatmapVisualizer>();
-        if(hmVisualizer == null) hmVisualizer = hmvGO.AddComponent<HeatmapVisualizer>();
+        if (selectedTracker == null) return;
 
-        // mira si tiene grid y si no se lo pone
-        Grid grid = hmvGO.GetComponentInChildren<Grid>();
+        // Si el tracker ya tiene visualizer asignado, se reutiliza
+        HeatmapVisualizer hmVisualizer = selectedTracker.heatMapVisualizer;
+
+        // Se busca en la escena si no tiene uno asignado
+#if UNITY_2023_1_OR_NEWER
+        if (hmVisualizer == null) {
+            hmVisualizer = Object.FindFirstObjectByType<HeatmapVisualizer>();
+        }
+#else
+        if(hmVisualizer == null)
+        {
+            hmVisualizer = Object.FindObjectOfType<HeatmapVisualizer>();
+        }
+#endif
+
+        // Si no existe ningun visualizer, se crea uno nuevo
+        if(hmVisualizer == null)
+        {
+            GameObject hmvGO = new GameObject("HeatmapVisualizer");
+            hmVisualizer = hmvGO.AddComponent<HeatmapVisualizer>();
+        }
+        //// mira si ya existe y si no lo crea
+        //GameObject hmvGO= GameObject.Find("HeatmapVisualizer");
+        //if (hmvGO == null) hmvGO = new GameObject("HeatmapVisualizer");
+
+        //// mira si tiene el componente y si no se lo pone
+        //HeatmapVisualizer hmVisualizer = hmvGO.GetComponent<HeatmapVisualizer>();
+        //if(hmVisualizer == null) hmVisualizer = hmvGO.AddComponent<HeatmapVisualizer>();
+
+        // Buscar si tiene grid dentro del visualizer
+        Grid grid = hmVisualizer.GetComponentInChildren<Grid>();
+
+        // Si no existe, se crea como hijo del visualizer
         if (grid == null) {
             GameObject gGO = new GameObject("Grid");
-            gGO.transform.SetParent(hmvGO.transform);
+            gGO.transform.SetParent(hmVisualizer.transform);
             grid = gGO.AddComponent<Grid>();
         }
+        // Conectar el grid con el visualizer
         hmVisualizer.setGrid(grid);
 
-        // conectamos el tracker con el visualizer
+        // Conectar el tracker con el visualizer
         selectedTracker.heatMapVisualizer = hmVisualizer;
     }
 
-    // Dibuja los campos generales del area de tracking:
-    // tamanio total del area y tamanio de cada casilla
+    // Dibuja los campos generales del area de tracking que el usuario puede modificar
     private void DrawTrackerSettings()
     {
 
@@ -205,15 +244,29 @@ public class HeatMapper : EditorWindow {
 
         Undo.RecordObject(selectedTracker, "Modify HeatMapper Tracker");
 
+        // Tamanio del area
         selectedTracker.areaSize = EditorGUILayout.Vector2Field("Area Size", selectedTracker.areaSize);
+        // Visibilidad del area de debug
+        selectedTracker.showTrackingArea = EditorGUILayout.Toggle("Show Tracking Area", selectedTracker.showTrackingArea);
+        // Visibilidad de la grid de debug
+        selectedTracker.showGrid = EditorGUILayout.Toggle("Show Cell Grid", selectedTracker.showGrid);
+        // Activacion de los handles de edicion del area
+        selectedTracker.showAreaEditor = EditorGUILayout.Toggle("Show Area Editor", selectedTracker.showAreaEditor);
+        // Tamanio de celda
         selectedTracker.cellSize = EditorGUILayout.FloatField("Cell Size", selectedTracker.cellSize);
-
+        // Ajsute del area a la cuadricula
+        if (GUILayout.Button("Snap Area To Grid"))
+        {
+            Undo.RecordObject(selectedTracker, "Snap Area To Grid");
+            selectedTracker.SnapAreaToGrid();
+            EditorUtility.SetDirty(selectedTracker);
+            SceneView.RepaintAll();
+        }
         // Evitar que el tamanio de casilla sea 0 o negativo
         if (selectedTracker.cellSize <= 0f)
         {
             selectedTracker.cellSize = 0.1f;
         }
-
        // EditorUtility.SetDirty(selectedTracker);
     }
 
@@ -221,7 +274,7 @@ public class HeatMapper : EditorWindow {
     // Se pueden aniadir, eliminar y modificar mapas
     private void DrawHeatMapConfigs()
     {
-        EditorGUILayout.LabelField("Heatmaps", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField("HeatMaps", EditorStyles.boldLabel);
 
         mapBaseName = EditorGUILayout.TextField("Base Name", mapBaseName);
 
@@ -301,9 +354,9 @@ public class HeatMapper : EditorWindow {
 
         EditorGUILayout.Space();
 
-        if (GUILayout.Button("Add Heatmap"))
+        if (GUILayout.Button("Add HeatMap"))
         {
-            Undo.RecordObject(selectedTracker, "Add Heatmap");
+            Undo.RecordObject(selectedTracker, "Add HeatMap");
 
             MapConfig newConfig = new MapConfig()
             {
@@ -314,6 +367,26 @@ public class HeatMapper : EditorWindow {
         }
     }
 
+    // Busca automaticamente un HeatMapperTracker existente en la escena
+    // Util para recuperar la referencia cuando la ventana de editor la pierde
+    private void FindTrackerInScene()
+    {
+        if (selectedTracker != null) return;
+
+#if UNITY_2023_1_OR_NEWER
+            HeatMapperTracker[] trackers = Object.FindObjectsByType<HeatMapperTracker>(
+                FindObjectsSortMode.None
+            );
+#else
+        HeatMapperTracker[] trackers = Object.FindObjectsOfType<HeatMapperTracker>();
+#endif
+        // Si encuentra un tracker, lo asigna como el seleccionado y obtiene su gameObject en la jerarquia
+        if (trackers.Length > 0)
+        {
+            selectedTracker = trackers[0];
+            Selection.activeGameObject = selectedTracker.gameObject;
+        }
+    }
     //private void AddMap()
     //{
     //    MapConfig newConfig;

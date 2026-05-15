@@ -55,8 +55,8 @@ public class HeatmapVisualizer : MonoBehaviour {
                         // unlockea transform de las tiles y color para k pinte 
                         tilemap.SetTileFlags(tilePos, TileFlags.None);
 
-                       // float alphavalue = heatvalue * 0.01f; // TODO ajustar si hace falta
-                        float alphavalue = Mathf.Clamp01(heatvalue * 0.1f);
+                        float alphavalue = heatvalue * 0.01f; // TODO ajustar si hace falta
+                        //float alphavalue = Mathf.Clamp01(heatvalue * 0.1f);
                         //float alphavalue = Mathf.Clamp01(heatvalue/ 10f);
                         // a mas calor mas alpha
                         Color color = config.color;
