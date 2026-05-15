@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using UnityEngine;
-using static UnityEngine.Rendering.DebugUI;
 
 // Componente principal que se coloca en la escena. Se encarga de:
 // - Definir el area de tracking
@@ -18,6 +16,10 @@ public class HeatMapperTracker : MonoBehaviour
     // Tamanio de cada casilla del heatmap.
     public float cellSize = 1f;
 
+    [Header("Debug")]
+    public bool showTrackingArea = true;
+    public bool showGrid = false;
+
     [Header("Heatmaps")]
 
     // Lista de configuraciones de heatmaps.
@@ -27,6 +29,7 @@ public class HeatMapperTracker : MonoBehaviour
     // Diccionario que guarda los heatmaps generados. 
     // La clave es el nombre del mapa y el valor es su matriz de calor
     private Dictionary<string, HeatMap> _heatMaps = new Dictionary<string, HeatMap>();
+    private List<MapConfig> _validHeatMapConfigs = new List<MapConfig>();
 
     // Temporizadores individuales para cada heatmap
     // Se usan para controlar cada cuanto se registra la posicion
@@ -49,7 +52,7 @@ public class HeatMapperTracker : MonoBehaviour
             }
 
             // crea los tilemaps por cada config
-            foreach(MapConfig config in heatMapConfigs) {
+            foreach(MapConfig config in _validHeatMapConfigs) {
                 heatMapVisualizer.createTileMap(config);
             }
         }
@@ -58,10 +61,8 @@ public class HeatMapperTracker : MonoBehaviour
     private void Update()
     {
         // Se revisa cada config y se ejecuta el tipo de tracking correspondiente
-        foreach (MapConfig config in heatMapConfigs)
+        foreach (MapConfig config in _validHeatMapConfigs)
         {
-            if (string.IsNullOrEmpty(config.mapName)) continue;
-
             switch(config.eventType)
             {
                 case TrackEventType.Transform:
@@ -97,8 +98,14 @@ public class HeatMapperTracker : MonoBehaviour
     // Cada heatmao tiene el mismo area y granularidad, pero registra datos distintos
     private void GenerateHeatMaps()
     {
+        if(cellSize <= 0f)
+        {
+            cellSize = 0.1f;
+        }
+
         _heatMaps.Clear();
         _timers.Clear();
+        _validHeatMapConfigs.Clear();
 
         // Calcular cuantas casillas caben en el area segun el tamanio de casilla
         int width = Mathf.CeilToInt(areaSize.x / cellSize);
@@ -111,14 +118,29 @@ public class HeatMapperTracker : MonoBehaviour
 
         foreach (MapConfig config in heatMapConfigs)
         {
-            if (string.IsNullOrEmpty (config.mapName)) continue;    
+            if (config == null) continue;
+
+            if (string.IsNullOrEmpty(config.mapName))
+            {
+                Debug.LogWarning("Heatmap sin nombre");
+                continue;
+            }
+
+            if (_heatMaps.ContainsKey(config.mapName))
+            {
+                Debug.LogWarning("Ya existe un heatmap con el nombre: " +  config.mapName);
+                continue;
+            }
+
 
             // Solo se crea el mapa si no existe ya otro con el mismo nombre
-            if (!_heatMaps.ContainsKey(config.mapName))
-            {
-                _heatMaps.Add(config.mapName, new HeatMap(width, height, cellSize, topLeft));
-                _timers.Add(config.mapName, 0f);
-            }
+            HeatMap heatMap = new HeatMap(width, height, cellSize, topLeft);
+
+            _heatMaps.Add(config.mapName, heatMap);
+            _timers.Add(config.mapName, 0f);
+            _validHeatMapConfigs.Add(config);
+
+            Debug.Log($"HeatMapper: creado heatmap '{config.mapName}' con tamaño {width}x{height} y cellSize {cellSize}");
         }
     }
 
@@ -126,6 +148,7 @@ public class HeatMapperTracker : MonoBehaviour
     private void TrackTransform(MapConfig config)
     {
         if (config.tr == null) return;
+        if(!_timers.ContainsKey(config.mapName)) return; 
 
         _timers[config.mapName] += Time.deltaTime;
 
@@ -140,6 +163,7 @@ public class HeatMapperTracker : MonoBehaviour
     private void TrackInputKey(MapConfig config)
     {
         if (config.tr == null) return;
+        if(!_heatMaps.ContainsKey(config.mapName)) return;
 
         if (Input.GetKeyDown(config.inputKey))
         {
@@ -150,6 +174,8 @@ public class HeatMapperTracker : MonoBehaviour
     // Registra la posicion del raton en el mundo cuando se hace click izquierdo
     private void TrackMouse (MapConfig config)
     {
+        if(!_heatMaps.ContainsKey(config.mapName)) return;
+
         if (!Input.GetMouseButtonDown((int)config.mouseButton)) return;   
 
         Camera camera = Camera.main;
@@ -164,7 +190,8 @@ public class HeatMapperTracker : MonoBehaviour
     private void TrackListTransform(MapConfig config)
     {
         if (config.transformList == null || config.transformList.Count == 0) return;
-
+        if(!_timers.ContainsKey(config.mapName)) return;
+     
         _timers[config.mapName] += Time.deltaTime;
         if (_timers[config.mapName] < config.sampleInterval) return;
         _timers[config.mapName] = 0f;
@@ -183,11 +210,21 @@ public class HeatMapperTracker : MonoBehaviour
     // Convierte la posicion a casilla y aumenta la intensidad de esa casilla
     private void RegisterPosition(string mapName, Vector3 worldPosition)
     {
-        if (!_heatMaps.ContainsKey(mapName)) return;
+        if (!_heatMaps.ContainsKey(mapName))
+        {
+            Debug.LogWarning($"HeatMapper: no existe el heatmap '{mapName}'");
+            return;
+        }
 
         HeatMap heatMap = _heatMaps[mapName];
 
         Vector2Int tile = heatMap.WorldToTile(worldPosition);
+
+        if (!heatMap.IsInside(tile.x, tile.y))
+        {
+            Debug.Log($"HeatMapper: posicion fuera del area en mapa '{mapName}'. Posicion: {worldPosition}, celda: {tile}");
+            return;
+        }
 
         heatMap.AddHeatMapValue(tile);
 
@@ -201,12 +238,20 @@ public class HeatMapperTracker : MonoBehaviour
         //_heatMaps[mapName][cell]++;
     }
 
+    // TODO borrar en el futuro, sirve para debug con GIZMOS
     // Dibuja en la Scene View el area, la cuadricula y los heatmaps
     private void OnDrawGizmos()
     {
         // TODO lo he comentado para poder ver bien el tilemap
-        //DrawTrackingArea();
-        //DrawGrid();
+        if(showTrackingArea)
+        {
+            DrawTrackingArea();
+        }
+        if (showGrid)
+        {
+            DrawGrid();
+        }
+
 
         //// Solo se dibuja los datos mientras el juego esta ejecutandose,
         //// porque los datos se guardan durante Play Mode
@@ -217,6 +262,7 @@ public class HeatMapperTracker : MonoBehaviour
         //}
     }
 
+    // TODO borrar en el futuro, sirve para debug con GIZMOS
     // Dibuja el rectangulo que delimita el area cubierta por el tracker
     private void DrawTrackingArea()
     {
@@ -224,6 +270,7 @@ public class HeatMapperTracker : MonoBehaviour
         Gizmos.DrawWireCube(transform.position, new Vector3(areaSize.x, areaSize.y, 0.1f));
     }
 
+    // TODO borrar en el futuro, sirve para debug con GIZMOS
     // Dibuja la cuadricula completa del area de tracking
     // Cada casilla representa una posible posicion del heatmap
     private void DrawGrid()
@@ -253,6 +300,7 @@ public class HeatMapperTracker : MonoBehaviour
         }
     }
 
+    // TODO borrar en el futuro, sirve para debug con GIZMOS
     // Dibuja las casillas con calor acumulado
     // Cuanto mayor sea el valor de una celda, mayor sera su intensidad visual
     private void DrawHeatmaps()
