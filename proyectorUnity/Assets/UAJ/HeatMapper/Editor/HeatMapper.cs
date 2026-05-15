@@ -1,5 +1,4 @@
-﻿using Unity.VisualScripting;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
 // HeatMapConfig; configuracion de cada heatmap
@@ -319,6 +318,11 @@ public class HeatMapper : EditorWindow {
             {
                 config.tr = EditorGUILayout.ObjectField("Transform to Register", config.tr, typeof(Transform), true) as Transform;
                 config.inputKey = (KeyCode)EditorGUILayout.EnumPopup("Input Key", config.inputKey);
+            }
+            if(config.eventType == TrackEventType.Custom)
+            {
+                EditorGUILayout.HelpBox("Custom event" + config.mapName , MessageType.Info);
+                
             }
             if(config.eventType == TrackEventType.InputMouse)
             {
