@@ -220,7 +220,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e82f25e47fef1f4bac70b34da0d4d8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1 &330459002
+  speed: 0.5
+--- !u!1 &304059973
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -228,68 +229,42 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 330459004}
-  - component: {fileID: 330459003}
+  - component: {fileID: 304059974}
+  - component: {fileID: 304059975}
   m_Layer: 0
-  m_Name: HeatMapperTracker
+  m_Name: Grid
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &330459003
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 330459002}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cb25efafdca9a05419bcef28087f3e7b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  areaSize: {x: 18, y: 10}
-  cellSize: 1
-  showTrackingArea: 0
-  showGrid: 1
-  showAreaEditor: 1
-  snapAreaToGrid: 1
-  heatMapConfigs:
-  - visible: 1
-    mapName: Player_position
-    tr: {fileID: 125869218}
-    eventType: 0
-    inputKey: 32
-    mouseButton: 0
-    transformList: []
-    color: {r: 1, g: 0.23264816, b: 0, a: 0.35}
-    sampleInterval: 0.05
-  - visible: 1
-    mapName: Enemy_position
-    tr: {fileID: 676738310}
-    eventType: 0
-    inputKey: 32
-    mouseButton: 0
-    transformList: []
-    color: {r: 0, g: 0.20207572, b: 1, a: 0.35}
-    sampleInterval: 0.25
-  heatMapVisualizer: {fileID: 2040548325}
---- !u!4 &330459004
+--- !u!4 &304059974
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 330459002}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_GameObject: {fileID: 304059973}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_Father: {fileID: 1187942168}
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!156049354 &304059975
+Grid:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 304059973}
+  m_Enabled: 1
+  m_CellSize: {x: 1, y: 1, z: 1}
+  m_CellGap: {x: 0, y: 0, z: 0}
+  m_CellLayout: 0
+  m_CellSwizzle: 0
 --- !u!1 &676738308
 GameObject:
   m_ObjectHideFlags: 0
@@ -371,6 +346,52 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1187942166
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1187942168}
+  - component: {fileID: 1187942167}
+  m_Layer: 0
+  m_Name: HeatmapVisualizer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1187942167
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1187942166}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b71558aabf508d4e9a92dddeb4a78b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _tilebase: {fileID: 11400000, guid: bf836077ba025424db9d0b213d9c9ed8, type: 2}
+--- !u!4 &1187942168
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1187942166}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 304059974}
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -492,7 +513,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1752809890
+--- !u!1 &1562030462
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -500,85 +521,64 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1752809891}
-  - component: {fileID: 1752809892}
+  - component: {fileID: 1562030464}
+  - component: {fileID: 1562030463}
   m_Layer: 0
-  m_Name: Grid
+  m_Name: HeatMapperTracker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &1752809891
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1752809890}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 2040548326}
-  m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!156049354 &1752809892
-Grid:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1752809890}
-  m_Enabled: 1
-  m_CellSize: {x: 1, y: 1, z: 1}
-  m_CellGap: {x: 0, y: 0, z: 0}
-  m_CellLayout: 0
-  m_CellSwizzle: 0
---- !u!1 &2040548324
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2040548326}
-  - component: {fileID: 2040548325}
-  m_Layer: 0
-  m_Name: HeatmapVisualizer
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &2040548325
+--- !u!114 &1562030463
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2040548324}
+  m_GameObject: {fileID: 1562030462}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4b71558aabf508d4e9a92dddeb4a78b3, type: 3}
+  m_Script: {fileID: 11500000, guid: cb25efafdca9a05419bcef28087f3e7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _tilebase: {fileID: 11400000, guid: bf836077ba025424db9d0b213d9c9ed8, type: 2}
---- !u!4 &2040548326
+  areaSize: {x: 18, y: 10}
+  cellSize: 1
+  showTrackingArea: 0
+  showGrid: 1
+  showAreaEditor: 1
+  heatMapConfigs:
+  - visible: 1
+    mapName: HeatMap_0
+    tr: {fileID: 125869218}
+    eventType: 0
+    inputKey: 32
+    mouseButton: 0
+    transformList: []
+    color: {r: 1, g: 0, b: 0, a: 0.35}
+    sampleInterval: 0.25
+  - visible: 1
+    mapName: HeatMap_1
+    tr: {fileID: 676738310}
+    eventType: 0
+    inputKey: 32
+    mouseButton: 0
+    transformList: []
+    color: {r: 0, g: 0.14742732, b: 1, a: 0.35}
+    sampleInterval: 0.25
+  heatMapVisualizer: {fileID: 1187942167}
+--- !u!4 &1562030464
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2040548324}
+  m_GameObject: {fileID: 1562030462}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1752809891}
+  m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

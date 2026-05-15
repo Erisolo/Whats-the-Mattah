@@ -58,7 +58,7 @@ public class HeatMapperTracker : MonoBehaviour
             Grid grid = heatMapVisualizer.GetComponentInChildren<Grid>();
             if(grid != null ) {
                 heatMapVisualizer.setGrid(grid);
-                grid.cellSize = new Vector3(cellSize, cellSize, 1.0f);
+                //grid.cellSize = new Vector3(cellSize, cellSize, 1.0f);
             }
 
             // Crea los tilemaps por cada config
