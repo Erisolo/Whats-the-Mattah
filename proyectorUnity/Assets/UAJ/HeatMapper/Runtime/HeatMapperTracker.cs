@@ -36,8 +36,7 @@ public class HeatMapperTracker : MonoBehaviour
 
     public HeatmapVisualizer heatMapVisualizer;
 
-    private void Start()
-    {
+    private void Start() {
         // Generar los mapas segun configuraciones
         GenerateHeatMaps();
         
@@ -46,11 +45,6 @@ public class HeatMapperTracker : MonoBehaviour
             Grid grid = heatMapVisualizer.GetComponentInChildren<Grid>();
             if(grid != null ) {
                 heatMapVisualizer.setGrid(grid);
-                // Calcular la esquina superior izquierda del area de tracking
-                Vector2 topLeft = new Vector2(
-                    transform.position.x - areaSize.x / 2f,
-                    transform.position.y + areaSize.y / 2f);
-                grid.transform.position = topLeft;
                 grid.cellSize = new Vector3(cellSize, cellSize, 1.0f);
             }
 
@@ -95,7 +89,6 @@ public class HeatMapperTracker : MonoBehaviour
                     // updatea los tilemaps segun el heatmap del dictionarty y el config
                     heatMapVisualizer.updateTileMap(_heatMaps[config.mapName], config);
                 }
-                
             }
         }
     }
@@ -211,16 +204,17 @@ public class HeatMapperTracker : MonoBehaviour
     // Dibuja en la Scene View el area, la cuadricula y los heatmaps
     private void OnDrawGizmos()
     {
-        DrawTrackingArea();
-        DrawGrid();
+        // TODO lo he comentado para poder ver bien el tilemap
+        //DrawTrackingArea();
+        //DrawGrid();
 
-        // Solo se dibuja los datos mientras el juego esta ejecutandose,
-        // porque los datos se guardan durante Play Mode
-        if (Application.isPlaying)
-        {
-            DrawHeatmaps();
-            //DrawRuntimeHeatmaps();
-        }
+        //// Solo se dibuja los datos mientras el juego esta ejecutandose,
+        //// porque los datos se guardan durante Play Mode
+        //if (Application.isPlaying)
+        //{
+        //    DrawHeatmaps();
+        //    //DrawRuntimeHeatmaps();
+        //}
     }
 
     // Dibuja el rectangulo que delimita el area cubierta por el tracker

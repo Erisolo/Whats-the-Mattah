@@ -42,18 +42,18 @@ public class HeatmapVisualizer : MonoBehaviour {
             Tilemap tilemap = _tilemaps[config.mapName];
             tilemap.ClearAllTiles(); // hace clear cada frame del update
 
-            for (int i = 0; i < heatmap.GetWidth(); ++i)
-            {
-                for (int j = 0; j < heatmap.GetHeight(); ++j)
-                {
+            for (int i = 0; i < heatmap.GetWidth(); ++i){
+                for (int j = 0; j < heatmap.GetHeight(); ++j) {
                     int heatvalue = heatmap.GetHeatMapValue(i, j);
 
                     // si hay valor le va ajustando el alfa y si hay mas calor mas rojo se pone
-                    if (heatvalue > 0)
-                    {
+                    if (heatvalue > 0) {
                         Debug.Log("tile x: " + i + "y: " + j);
-                        Vector3Int tilePos = new Vector3Int(i, -j, 0);
+                        Vector3Int tilePos = new Vector3Int(i - heatmap.GetWidth()/2, -(j-heatmap.GetHeight()/2), 0); // ajuste pa k se vea bn
                         tilemap.SetTile(tilePos, _tilebase);
+
+                        // unlockea transform de las tiles y color para k pinte 
+                        tilemap.SetTileFlags(tilePos, TileFlags.None);
 
                         float alphavalue = heatvalue * 0.01f; // TODO ajustar si hace falta
 
