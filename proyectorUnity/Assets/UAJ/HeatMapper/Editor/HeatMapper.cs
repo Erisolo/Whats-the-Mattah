@@ -261,6 +261,11 @@ public class HeatMapper : EditorWindow {
             EditorUtility.SetDirty(selectedTracker);
             SceneView.RepaintAll();
         }
+
+        // Inspeccion de celda
+        selectedTracker.enableCellInspector = EditorGUILayout.Toggle("Enable Cell Inspector", selectedTracker.enableCellInspector);
+        // Activar solo heatmaps visibles
+        selectedTracker.showOnlyVisibleHeatMaps = EditorGUILayout.Toggle("Only Visible HeatMaps", selectedTracker.showOnlyVisibleHeatMaps);
         // Evitar que el tamanio de casilla sea 0 o negativo
         if (selectedTracker.cellSize <= 0f)
         {

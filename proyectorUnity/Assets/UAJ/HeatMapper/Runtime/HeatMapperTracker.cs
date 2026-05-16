@@ -49,6 +49,12 @@ public class HeatMapperTracker : MonoBehaviour
 
     public HeatmapVisualizer heatMapVisualizer;
 
+    [Header("Cell Inspector")]
+    // Permite activar o desactivar la inpeccion de celdas
+    public bool enableCellInspector = true;
+    // Para mostrar solo en los heatmpas que esten activos
+    public bool showOnlyVisibleHeatMaps = true;
+
     private void Start() {
         // Generar los mapas segun configuraciones
         GenerateHeatMaps();
@@ -161,6 +167,14 @@ public class HeatMapperTracker : MonoBehaviour
         }
     }
 
+    public IReadOnlyDictionary<string, HeatMap> GetHeatMaps() {
+        return _heatMaps;
+    }
+
+    public IReadOnlyList<MapConfig> GetValidHeatMapConfigs()
+    {
+        return _validHeatMapConfigs;
+    }
     // Registra periodicamente la posicion del Transform indicando en la configuracion
     private void TrackTransform(MapConfig config)
     {
@@ -271,6 +285,102 @@ public class HeatMapperTracker : MonoBehaviour
         areaSize = new Vector2(width * cellSize, height * cellSize);
     }
 
+    // Convertir posicion del mundo a celda
+    public bool GetCellAtWorldPosition(Vector3 worldPosition, out Vector2Int cell)
+    {
+        cell = Vector2Int.zero;
+
+        if (_heatMaps == null || _heatMaps.Count == 0)
+        {
+            return false;
+        }
+
+        foreach (HeatMap heatMap in _heatMaps.Values)
+        {
+            cell = heatMap.WorldToTile(worldPosition);
+
+            return heatMap.IsInside(cell.x, cell.y);
+        }
+
+        return false;
+    }
+
+    // Obtener el centro de una celda, Sirve para mostrar el popup justo en la celda seleccionada
+    public bool GetCellWorldCenter(Vector2Int cell, out Vector3 worldCenter)
+    {
+        worldCenter = Vector3.zero;
+
+        if(_heatMaps == null || _heatMaps.Count == 0)
+        {
+            return false;
+        }
+
+        foreach (HeatMap heatMap in _heatMaps.Values)
+        {
+            if(!heatMap.IsInside(cell.x, cell.y))
+            {
+                return false;
+            }
+
+            worldCenter = heatMap.TileToWorldCenter(cell.x, cell.y, transform.position.z);
+
+            return true;
+        }
+        return false;
+    }
+
+    // Obtener informacion de la celda
+    public List<string> GetCellInfo(Vector2Int cell)
+    {
+        List<string> info = new List<string>();
+
+        if (_heatMaps == null || _heatMaps.Count == 0)
+        {
+            info.Add("No hay heatmaps generados.");
+            return info;
+        }
+
+        foreach (MapConfig config in _validHeatMapConfigs)
+        {
+            if (config == null) continue;
+
+            if (showOnlyVisibleHeatMaps && !config.visible)
+            {
+                continue;
+            }
+
+            if (!_heatMaps.ContainsKey(config.mapName))
+            {
+                continue;
+            }
+
+            HeatMap heatMap = _heatMaps[config.mapName];
+            if(!heatMap.IsInside(cell.x, cell.y))
+            {
+                continue;
+            }
+
+            int value = heatMap.GetHeatMapValue(cell.x, cell.y);
+
+            string targetName = "None";
+
+            if (config.tr != null)
+            {
+                targetName = config.tr.name;
+            }
+
+            string line =
+                $"Heatmap: {config.mapName}\n" +
+                $"Value: {value}\n" +
+                $"Visible: {config.visible}\n" +
+                $"Event Type: {config.eventType}\n" +
+                $"Target: {targetName}";
+
+            info.Add(line);
+        }
+
+        return info;
+    }
     // TODO borrar en el futuro, sirve para debug con GIZMOS
     // Dibuja en la Scene View el area, la cuadricula y los heatmaps
     private void OnDrawGizmos()
