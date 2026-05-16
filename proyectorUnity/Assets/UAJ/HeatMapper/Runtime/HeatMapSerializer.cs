@@ -19,6 +19,18 @@ public struct HeatMapData
 
 public static class HeatMapSerializer
 {
+    public static string savingPath;
+    public static string calculateSavingPath(string sesion)
+    {
+        string basePath = Path.GetFullPath(Path.Combine(Application.dataPath, "heatMaps"));
+
+        string sessionPath = Path.Combine(basePath, $"session_{sesion}");
+
+        Directory.CreateDirectory(sessionPath);
+        savingPath = sessionPath;
+
+        return sessionPath;
+    }
 
     public static string ToJson(HeatMap heatMap)
     {
@@ -65,16 +77,15 @@ public static class HeatMapSerializer
     public static void SaveToFile(HeatMap heatMap, string fileName)
     {
         string json = ToJson(heatMap);
-        string path = Path.Combine(Application.persistentDataPath, fileName);
+        string path = Path.Combine(savingPath, fileName);
         File.WriteAllText(path, json);
 
         Debug.Log($"Guardado en: {path}");
     }
 
     
-    public static HeatMap LoadFromFile(string fileName)
-    {
-        string path = Path.Combine(Application.persistentDataPath, fileName);
+    public static HeatMap LoadFromFile(string path)
+    { 
 
         if (!File.Exists(path))
         {

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 // Componente principal que se coloca en la escena. Se encarga de:
@@ -57,6 +58,10 @@ public class HeatMapperTracker : MonoBehaviour
 
 
     private void Start() {
+        string CurrentSessionId = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+        HeatMapSerializer.calculateSavingPath(CurrentSessionId);
+
+
         // Generar los mapas segun configuraciones
         GenerateHeatMaps();
         
@@ -73,6 +78,26 @@ public class HeatMapperTracker : MonoBehaviour
                 heatMapVisualizer.createTileMap(config);
             }
         }
+    }
+
+    private void OnDestroy()
+    {
+        foreach (KeyValuePair<string, HeatMap> entry in _heatMaps)
+        {
+            HeatMapSerializer.SaveToFile(entry.Value, entry.Key);
+            Debug.Log("saving");
+        }
+            
+    }
+
+    private void OnApplicationQuit()
+    {
+        foreach (KeyValuePair<string, HeatMap> entry in _heatMaps)
+        {
+            HeatMapSerializer.SaveToFile(entry.Value, entry.Key);
+            Debug.Log("saving");
+        }
+
     }
 
     private void Update()
