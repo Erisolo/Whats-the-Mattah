@@ -80,9 +80,9 @@ public class HeatmapVisualizer : MonoBehaviour {
                                 new Vector3(tileScale, tileScale, 1f)
                                 )
                             );
-                        float alphavalue = heatvalue * 0.01f; // TODO ajustar si hace falta
-                        //float alphavalue = Mathf.Clamp01(heatvalue * 0.1f);
-                        //float alphavalue = Mathf.Clamp01(heatvalue/ 10f);
+                        //float alphavalue = heatvalue * 0.01f; // TODO ajustar si hace falta
+                        float alphavalue = Mathf.Clamp(heatvalue * 0.05f, 0.10f, 0.95f);
+
                         // a mas calor mas alpha
                         Color color = config.color;
                         color.a = alphavalue;

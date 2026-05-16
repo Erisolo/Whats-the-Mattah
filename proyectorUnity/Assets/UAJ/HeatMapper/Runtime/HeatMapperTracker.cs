@@ -28,6 +28,16 @@ public class HeatMapperTracker : MonoBehaviour
     // Cuando esta activo, el usuario puede redimensionar visualmente el area del tracker
     public bool showAreaEditor = true;
 
+    [Header("Cell Inspector")]
+    // Permite activar o desactivar la inpeccion de celdas
+    public bool enableCellInspector = false;
+    // Para mostrar solo en los heatmpas que esten activos
+    public bool showOnlyVisibleHeatMaps = true;
+
+    [Header("Visualization")]
+
+    public HeatmapVisualizer heatMapVisualizer;
+
     [Header("Heatmaps")]
     // Lista de configuraciones de heatmaps.
     // Cada configuracion define que evento se trackea, que objeto se registra y como se visualiza
@@ -45,15 +55,6 @@ public class HeatMapperTracker : MonoBehaviour
     // Se usan para controlar cada cuanto se registra la posicion
     private Dictionary<string, float> _timers = new Dictionary<string,float>();
 
-    [Header("Visualization")]
-
-    public HeatmapVisualizer heatMapVisualizer;
-
-    [Header("Cell Inspector")]
-    // Permite activar o desactivar la inpeccion de celdas
-    public bool enableCellInspector = true;
-    // Para mostrar solo en los heatmpas que esten activos
-    public bool showOnlyVisibleHeatMaps = true;
 
     private void Start() {
         // Generar los mapas segun configuraciones
@@ -442,68 +443,6 @@ public class HeatMapperTracker : MonoBehaviour
             }
         }
     }
-
-    // TODO borrar en el futuro, sirve para debug con GIZMOS
-    // Dibuja las casillas con calor acumulado
-    // Cuanto mayor sea el valor de una celda, mayor sera su intensidad visual
-    private void DrawHeatmaps()
-    {
-        foreach (MapConfig config in heatMapConfigs)
-        {
-            if (!config.visible) continue;
-            if (!_heatMaps.ContainsKey(config.mapName)) continue;
-
-            HeatMap heatMap = _heatMaps[config.mapName];
-
-            for(int x = 0; x < heatMap.GetWidth(); x++)
-            {
-                for(int y=0; y < heatMap.GetHeight(); y++)
-                {
-                    int value = heatMap.GetHeatMapValue(x, y);
-
-                    if (value <= 0) continue;
-
-                    // Normalizacion simple para convertir el valor de la celda en una intensidad entre 0 y 1
-                    float intensity = Mathf.Clamp01(value / 20f);
-
-                    Color c = config.color;
-                    c.a = intensity;
-
-                    Gizmos.color = c;
-
-                    Vector3 center = heatMap.TileToWorldCenter(x, y, transform.position.z);
-
-                    Gizmos.DrawCube(center, new Vector3(cellSize, cellSize, 0.05f));
-
-                }
-            }
-        }
-    }
-    //private void DrawRuntimeHeatmaps()
-    //{
-    //    if (_heatMaps == null) return;
-
-    //    foreach (MapConfig config in heatMapConfigs)
-    //    {
-    //        if (!config.visible) continue;
-    //        if (!_heatMaps.ContainsKey(config.mapName)) continue;
-
-    //        Dictionary<Vector2Int, int> cells = _heatMaps[config.mapName];
-
-    //        foreach (KeyValuePair<Vector2Int, int> cell in cells)
-    //        {
-    //            Vector3 cellCenter = CellToWorld(cell.Key);
-
-    //            float intensity = Mathf.Clamp01(cell.Value / 10f);
-
-    //            Color c = config.color;
-    //            c.a = intensity * config.color.a;
-
-    //            Gizmos.color = c;
-    //            Gizmos.DrawCube(cellCenter, new Vector3(cellSize, cellSize, 0.1f));
-    //        }
-    //    }
-    //}
 }
 
 

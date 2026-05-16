@@ -1,5 +1,6 @@
 using UnityEditor;
 using UnityEngine;
+using System.Collections.Generic;
 
 // Editor personalizado para HeatMapperTracker
 // Permite al usuario editar el área del HeatMapperTracker visualmente desde 
@@ -77,7 +78,7 @@ public class HeatMapperTrackerEditor : Editor
         );
 
         // Si algun handle se ha movido, se recalcula el area
-        if(EditorGUI.EndChangeCheck())
+        if (EditorGUI.EndChangeCheck())
         {
             Undo.RecordObject(tracker, "Resize HeatMapper Area");
 
@@ -121,5 +122,14 @@ public class HeatMapperTrackerEditor : Editor
         Handles.DrawLine(bottomRight, bottomLeft);
         Handles.DrawLine(bottomLeft, topLeft);
     }
+    public override void OnInspectorGUI()
+    {
+        HeatMapperTracker tracker = (HeatMapperTracker)target;
 
+        HeatMapConfigDrawer.DrawTrackerSettings(tracker);
+
+        EditorGUILayout.Space();
+
+        HeatMapConfigDrawer.DrawHeatMapConfigs(tracker);
+    }
 }

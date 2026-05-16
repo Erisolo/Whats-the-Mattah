@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 // HeatMapConfig; configuracion de cada heatmap
@@ -15,6 +16,7 @@ using UnityEngine;
 // - Objeto o input asocaido
 public class HeatMapper : EditorWindow {
 
+    private Vector2 scrollPosition;
     private int _selectedMapType = 0;
 
     [Header("VISUALIZAR")]
@@ -36,7 +38,8 @@ public class HeatMapper : EditorWindow {
     [MenuItem("Tools/HeatMapper")]
     public static void ShowWindow() {
         //GetWindow(typeof(HeatMapper));
-        GetWindow<HeatMapper>("HeatMapper");
+        HeatMapper window = GetWindow<HeatMapper>();
+        window.titleContent = new GUIContent("HeatMapper");
     }
 
     private void OnEnable()
@@ -47,6 +50,9 @@ public class HeatMapper : EditorWindow {
 
     private void OnGUI() {
         FindTrackerInScene();
+
+        scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+
         GUIStyle style = new GUIStyle(EditorStyles.boldLabel)
         {
             normal = { textColor = new Color(0.95f, 0.7f, 0.84f) }
@@ -84,11 +90,11 @@ public class HeatMapper : EditorWindow {
 
         EditorGUILayout.Space();
 
-        DrawTrackerSettings();
+        HeatMapConfigDrawer.DrawTrackerSettings(selectedTracker);
 
         EditorGUILayout.Space();
 
-        DrawHeatMapConfigs();
+        HeatMapConfigDrawer.DrawHeatMapConfigs(selectedTracker);
 
         // Si se ha modificado algo en la ventana, se marca el tracker como modificado
         // y se fuerza el repintado en la Scene View
@@ -98,6 +104,7 @@ public class HeatMapper : EditorWindow {
             SceneView.RepaintAll();
         }
 
+        EditorGUILayout.EndScrollView();
         //mapBaseName = EditorGUILayout.TextField("Base Name", mapBaseName);
 
         //EditorGUILayout.Space();
@@ -235,147 +242,6 @@ public class HeatMapper : EditorWindow {
         selectedTracker.heatMapVisualizer = hmVisualizer;
     }
 
-    // Dibuja los campos generales del area de tracking que el usuario puede modificar
-    private void DrawTrackerSettings()
-    {
-
-        EditorGUILayout.LabelField("Tracking Area", EditorStyles.boldLabel);
-
-        Undo.RecordObject(selectedTracker, "Modify HeatMapper Tracker");
-
-        // Tamanio del area
-        selectedTracker.areaSize = EditorGUILayout.Vector2Field("Area Size", selectedTracker.areaSize);
-        // Visibilidad del area de debug
-        selectedTracker.showTrackingArea = EditorGUILayout.Toggle("Show Tracking Area", selectedTracker.showTrackingArea);
-        // Visibilidad de la grid de debug
-        selectedTracker.showGrid = EditorGUILayout.Toggle("Show Cell Grid", selectedTracker.showGrid);
-        // Activacion de los handles de edicion del area
-        selectedTracker.showAreaEditor = EditorGUILayout.Toggle("Show Area Editor", selectedTracker.showAreaEditor);
-        // Tamanio de celda
-        selectedTracker.cellSize = EditorGUILayout.FloatField("Cell Size", selectedTracker.cellSize);
-        // Ajsute del area a la cuadricula
-        if (GUILayout.Button("Snap Area To Grid"))
-        {
-            Undo.RecordObject(selectedTracker, "Snap Area To Grid");
-            selectedTracker.SnapAreaToGrid();
-            EditorUtility.SetDirty(selectedTracker);
-            SceneView.RepaintAll();
-        }
-
-        // Inspeccion de celda
-        selectedTracker.enableCellInspector = EditorGUILayout.Toggle("Enable Cell Inspector", selectedTracker.enableCellInspector);
-        // Activar solo heatmaps visibles
-        selectedTracker.showOnlyVisibleHeatMaps = EditorGUILayout.Toggle("Only Visible HeatMaps", selectedTracker.showOnlyVisibleHeatMaps);
-        // Evitar que el tamanio de casilla sea 0 o negativo
-        if (selectedTracker.cellSize <= 0f)
-        {
-            selectedTracker.cellSize = 0.1f;
-        }
-       // EditorUtility.SetDirty(selectedTracker);
-    }
-
-    // Dibuja la lista de heatmaps configurados en el tracker.
-    // Se pueden aniadir, eliminar y modificar mapas
-    private void DrawHeatMapConfigs()
-    {
-        EditorGUILayout.LabelField("HeatMaps", EditorStyles.boldLabel);
-
-        mapBaseName = EditorGUILayout.TextField("Base Name", mapBaseName);
-
-        for (int i = 0; i < selectedTracker.heatMapConfigs.Count; i++)
-        {
-            MapConfig config = selectedTracker.heatMapConfigs[i];
-
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-            
-            EditorGUILayout.BeginHorizontal();
-
-            EditorGUILayout.LabelField(config.mapName, EditorStyles.boldLabel);
-
-
-            if (GUILayout.Button("X", GUILayout.Width(25)))
-            {
-                Undo.RecordObject(selectedTracker, "Remove Heatmap");
-                selectedTracker.heatMapConfigs.RemoveAt(i);
-                EditorGUILayout.EndHorizontal();
-                EditorGUILayout.EndVertical();
-                break;
-            }
-
-            EditorGUILayout.EndHorizontal();
-
-            config.visible = EditorGUILayout.Toggle("Visible", config.visible);
-            config.mapName = EditorGUILayout.TextField("Map Name", config.mapName);
-            config.eventType =(TrackEventType)EditorGUILayout.EnumPopup("Event Type", config.eventType);
-            config.color = EditorGUILayout.ColorField("Color",config.color);
-            config.sampleInterval = EditorGUILayout.FloatField("Sample Interval", config.sampleInterval);
-           
-            if(config.sampleInterval <= 0f)
-            {
-                config.sampleInterval = 0.01f;
-            }
-
-            if (config.eventType == TrackEventType.Transform)
-            {
-                config.tr = EditorGUILayout.ObjectField("Transform to Register", config.tr, typeof(Transform), true) as Transform;
-            }
-            if (config.eventType == TrackEventType.InputKey)
-            {
-                config.tr = EditorGUILayout.ObjectField("Transform to Register", config.tr, typeof(Transform), true) as Transform;
-                config.inputKey = (KeyCode)EditorGUILayout.EnumPopup("Input Key", config.inputKey);
-            }
-            if(config.eventType == TrackEventType.Custom)
-            {
-                EditorGUILayout.HelpBox("Custom event" + config.mapName , MessageType.Info);
-                
-            }
-            if(config.eventType == TrackEventType.InputMouse)
-            {
-                config.mouseButton = (MouseButton)EditorGUILayout.EnumPopup("Mouse Button", config.mouseButton);
-            }
-            if (config.eventType == TrackEventType.ListTransform)
-            {
-                EditorGUILayout.LabelField("Transforms", EditorStyles.miniBoldLabel);
-                for (int t = 0; t < config.transformList.Count; t++)
-                {
-                    EditorGUILayout.BeginHorizontal();
-                    config.transformList[t] = EditorGUILayout.ObjectField(config.transformList[t], typeof(Transform), true) as Transform;
-                    if (GUILayout.Button("-", GUILayout.Width(22)))
-                    {
-                        config.transformList.RemoveAt(t);
-                        EditorGUILayout.EndHorizontal();
-                        break;
-                    }
-                    EditorGUILayout.EndHorizontal();
-                }
-                if(GUILayout.Button("+ Add Transform"))
-                {
-                    config.transformList.Add(null);
-                }
-            }
-            if (config.sampleInterval <= 0f)
-            {
-                config.sampleInterval = 0.01f;
-            }
-
-            EditorGUILayout.EndVertical();
-        }
-
-        EditorGUILayout.Space();
-
-        if (GUILayout.Button("Add HeatMap"))
-        {
-            Undo.RecordObject(selectedTracker, "Add HeatMap");
-
-            MapConfig newConfig = new MapConfig()
-            {
-                mapName = mapBaseName + "_" + selectedTracker.heatMapConfigs.Count
-            };
-
-            selectedTracker.heatMapConfigs.Add(newConfig);
-        }
-    }
-
     // Busca automaticamente un HeatMapperTracker existente en la escena
     // Util para recuperar la referencia cuando la ventana de editor la pierde
     private void FindTrackerInScene()
@@ -396,24 +262,4 @@ public class HeatMapper : EditorWindow {
             Selection.activeGameObject = selectedTracker.gameObject;
         }
     }
-    //private void AddMap()
-    //{
-    //    MapConfig newConfig;
-    //    switch ((TrackEventType)_selectedMapType)
-    //    { // assign chosen type
-    //        case TrackEventType.Transform:
-    //            newConfig = new TransformConfig();
-    //            break;
-    //        case TrackEventType.InputKey:
-    //            newConfig = new InputKeyConfig();
-    //            break;
-    //        case TrackEventType.InputMouse:
-    //            newConfig = new InputMouseConfig();
-    //            break;
-    //        default:
-    //            newConfig = new MapConfig();
-    //            break;
-    //    }
-    //    ArrayUtility.Add(ref _heatMapConfigs, newConfig);
-    //}
 }

@@ -1,8 +1,5 @@
 using UnityEngine;
 
-
-// IMPORTANTE TENER EN CUENTA K LO ESTOY HACIENDO EL ORIGEN EN TOPLEFY Y LA X VA HACIA LA DERECHA Y LA Y VA HACIA ABAJO GRACIAS
-
 // Representa los datos de un heatmap como una matriz de enteros
 // Cada posicion de la matriz equivale a una celda del area trackeada
 // El valor de cada celda indica cuantas veces se ha registrado une vento en esa zona
