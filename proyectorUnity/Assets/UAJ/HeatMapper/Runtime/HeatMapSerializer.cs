@@ -76,6 +76,7 @@ public static class HeatMapSerializer
 
     public static void SaveToFile(HeatMap heatMap, string fileName)
     {
+        Debug.Log(fileName);
         string json = ToJson(heatMap);
         string path = Path.Combine(savingPath, fileName + ".json");
         File.WriteAllText(path, json);

@@ -1,15 +1,122 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting.FullSerializer;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
+[ExecuteAlways]
 public class HeatmapVisualizer : MonoBehaviour {
     [SerializeField] private TileBase _tilebase;
-    private Grid _grid; // se asigna con el heatmapper
+    [SerializeField] private Grid _grid;
 
     private Dictionary<string, Tilemap> _tilemaps = new Dictionary<string, Tilemap>();
 
     public void setGrid(Grid grid) { _grid = grid; }
+
+    [SerializeField]
+    // Lista de combinaciones de heatmaps.
+    public List<HeatMapCombineType> heatMapsToVisualize = new List<HeatMapCombineType>();
+
+    //llamado cuando cambia algo en el editor (posiblemente los heatmaps)
+    public void OnValidate()
+    {
+        ClearTilemaps();
+        for (int i = 0; i < heatMapsToVisualize.Count; i++)
+        {
+            heatMapsToVisualize[i].RefreshHeatmaps();
+            heatMapsToVisualize[i].logicOperation();
+        }
+
+        createTileMaps();
+        Debug.Log("mapa creado");
+    }
+
+    public void createTileMaps()
+    {
+        for (int i = 0; i < heatMapsToVisualize.Count; i++)
+        {
+            if (_grid != null)
+            {
+               
+                // crea un nuevo gameobject contenedor de un tilemap con su nombre con identificador y lo hace hijo de grid.
+                GameObject tmGO = new GameObject($"Tilemap_{heatMapsToVisualize[i].name}");
+                tmGO.transform.SetParent(_grid.transform);
+
+                // pone los componentes
+                Tilemap tilemap = tmGO.AddComponent<Tilemap>();
+                TilemapRenderer tmRenderer = tmGO.AddComponent<TilemapRenderer>();
+                tmRenderer.sharedMaterial = new Material(Shader.Find("Sprites/Default"));
+
+                // para k se pinte por encima de todo
+                tmRenderer.sortingLayerName = "Heatmap";
+                tmRenderer.sortingOrder = 9999; // por ejemplo
+
+                // aniade el tilemap al dictionary
+                _tilemaps.Add(heatMapsToVisualize[i].name, tilemap);
+
+                // Sincronizar el Grid con el HeatMap, para que usen el mismo tamanio de celda
+                _grid.cellSize = new Vector3(heatMapsToVisualize[i].heatMapToRender.GetTileSize(), heatMapsToVisualize[i].heatMapToRender.GetTileSize(), 1f);
+
+                // El origen del Grid se coloca en la esquina superior izquierda del area
+                //heatmap.GetPosition es la esquina superior izquierda del area
+                _grid.transform.position = new Vector3(heatMapsToVisualize[i].heatMapToRender.GetPosition().x, heatMapsToVisualize[i].heatMapToRender.GetPosition().y, 0f);
+
+
+
+                //y ahora pintamos sus casillas
+                for (int x = 0; x < heatMapsToVisualize[i].heatMapToRender.GetWidth(); ++x)
+                {
+                    for (int y = 0; y < heatMapsToVisualize[i].heatMapToRender.GetHeight(); ++y)
+                    {
+                        int heatvalue = heatMapsToVisualize[i].heatMapToRender.GetHeatMapValue(x, y);
+
+                        // si hay valor le va ajustando el alfa y si hay mas calor mas rojo se pone
+                        if (heatvalue > 0)
+                        {
+                           
+                            Vector3Int tilePos = new Vector3Int(x, -y - 1, 0);
+                            tilemap.SetTile(tilePos, _tilebase);
+
+                            // unlockea transform de las tiles y color para k pinte 
+                            tilemap.SetTileFlags(tilePos, TileFlags.None);
+
+
+                            // Escalar visualmente la tile para que ocupe el tamanio de celda del heatmap
+                            float tileScale = heatMapsToVisualize[i].heatMapToRender.GetTileSize();
+                            tilemap.SetTransformMatrix(
+                                tilePos,
+                                Matrix4x4.TRS(
+                                    Vector3.zero,
+                                    Quaternion.identity,
+                                    new Vector3(tileScale, tileScale, 1f)
+                                    )
+                                );
+                            //float alphavalue = heatvalue * 0.01f; // TODO ajustar si hace falta
+                            float alphavalue = Mathf.Clamp(heatvalue * 0.05f, 0.10f, 0.95f);
+
+                            // a mas calor mas alpha
+                            Color color = heatMapsToVisualize[i].color;
+                            color.a = alphavalue;
+
+                            tilemap.SetColor(tilePos, color);
+                        }
+                    }
+                }
+                // lo pone visible en caso de estar en el config
+                tilemap.gameObject.SetActive(heatMapsToVisualize[i].visible);
+            }
+        
+        }
+
+    }
+
+
+
+
 
     // crea un tilemap nuevo y lo mete al dictionary
     public void createTileMap(MapConfig config) {
@@ -95,5 +202,15 @@ public class HeatmapVisualizer : MonoBehaviour {
             // lo pone visible en caso de estar en el config
             tilemap.gameObject.SetActive(config.visible);
         }
+    }
+
+    private void ClearTilemaps()
+    {
+        foreach (Transform child in _grid.transform)
+        {
+            GameObject.Destroy(child.gameObject);
+        }
+
+        _tilemaps.Clear();
     }
 }

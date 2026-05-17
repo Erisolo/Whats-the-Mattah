@@ -85,20 +85,19 @@ public class HeatMapperTracker : MonoBehaviour
         foreach (KeyValuePair<string, HeatMap> entry in _heatMaps)
         {
             HeatMapSerializer.SaveToFile(entry.Value, entry.Key);
-            Debug.Log("saving");
         }
             
     }
 
-    private void OnApplicationQuit()
-    {
-        foreach (KeyValuePair<string, HeatMap> entry in _heatMaps)
-        {
-            HeatMapSerializer.SaveToFile(entry.Value, entry.Key);
-            Debug.Log("saving");
-        }
+    //private void OnApplicationQuit()
+    //{
+    //    foreach (KeyValuePair<string, HeatMap> entry in _heatMaps)
+    //    {
+    //        HeatMapSerializer.SaveToFile(entry.Value, entry.Key);
+    //        Debug.Log("saving");
+    //    }
 
-    }
+    //}
 
     private void Update()
     {
@@ -127,12 +126,13 @@ public class HeatMapperTracker : MonoBehaviour
             }
 
             // Actualiza el visualizer (lo del tilemap)
-            if (heatMapVisualizer != null) {
-                if (_heatMaps.ContainsKey(config.mapName)) { // Si tiene el heatmap con el nombre en el dictionary
-                    // updatea los tilemaps segun el heatmap del dictionarty y el config
-                    heatMapVisualizer.updateTileMap(_heatMaps[config.mapName], config);
-                }
-            }
+
+            //if (heatMapVisualizer != null) {
+            //    if (_heatMaps.ContainsKey(config.mapName)) { // Si tiene el heatmap con el nombre en el dictionary
+            //        // updatea los tilemaps segun el heatmap del dictionarty y el config
+            //        heatMapVisualizer.updateTileMap(_heatMaps[config.mapName], config);
+            //    }
+            //}
         }
     }
 
