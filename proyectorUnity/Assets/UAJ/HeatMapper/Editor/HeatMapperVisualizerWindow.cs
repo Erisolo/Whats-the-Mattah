@@ -13,9 +13,13 @@ public class HeatMapperVisualizerWindow : EditorWindow
 
     private string _basePath;
 
+    // Estado visual por INSTANCIA
     private Dictionary<string, bool> _mapVisibility = new Dictionary<string, bool>();
     private Dictionary<string, float> _mapOpacity = new Dictionary<string, float>();
     private Dictionary<string, Color> _mapColor = new Dictionary<string, Color>();
+
+    // tracking de múltiples instancias del mismo heatmap
+    private Dictionary<string, HeatMap> _activeHeatmaps = new Dictionary<string, HeatMap>();
 
     [MenuItem("Tools/HeatMapper/Visualizer", false, 1)]
     public static void OpenWindow()
@@ -51,19 +55,16 @@ public class HeatMapperVisualizerWindow : EditorWindow
         }
         else
         {
-            EditorGUILayout.HelpBox(
-                "No tracker in scene.",
-                MessageType.Info
-            );
+            EditorGUILayout.HelpBox("No tracker in scene.", MessageType.Info);
             EditorGUILayout.Space();
         }
 
-        DrawSessionBlock();
+        DrawSessionsBlock();
 
         EditorGUILayout.EndScrollView();
     }
 
-    private void DrawSessionBlock()
+    private void DrawSessionsBlock()
     {
         EditorGUILayout.LabelField("Sessions", EditorStyles.boldLabel);
 
@@ -80,73 +81,71 @@ public class HeatMapperVisualizerWindow : EditorWindow
 
         foreach (string session in _sessions)
         {
-            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
-            EditorGUILayout.LabelField(session);
+            EditorGUILayout.LabelField(session, EditorStyles.boldLabel);
 
-            if (GUILayout.Button("Add Session", GUILayout.Width(120)))
+            string sessionPath = Path.Combine(_basePath, session);
+
+            if (Directory.Exists(sessionPath))
             {
-                LoadSession(session);
+                string[] files = Directory.GetFiles(sessionPath, "*.json");
+
+                foreach (string file in files)
+                {
+                    string mapName = Path.GetFileNameWithoutExtension(file);
+
+                    EditorGUILayout.BeginHorizontal();
+
+                    EditorGUILayout.LabelField(mapName);
+
+                    if (GUILayout.Button("Add Heatmap", GUILayout.Width(120)))
+                    {
+                        AddHeatmapFromFile(file);
+                    }
+
+                    EditorGUILayout.EndHorizontal();
+                }
             }
 
-            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.EndVertical();
         }
     }
 
-    private void LoadSession(string session)
+    private void AddHeatmapFromFile(string file)
     {
         if (_tracker == null || _tracker.heatMapVisualizer == null)
             return;
 
-        string sessionPath = Path.GetFullPath(
-            Path.Combine(Application.dataPath, "heatMaps", session)
-        );
-
-        if (!Directory.Exists(sessionPath)) return;
-
-        var files = Directory.GetFiles(sessionPath, "*.json");
-
-        foreach (string file in files)
-        {
-            HeatMap heatmap = HeatMapSerializer.LoadFromFile(file);
-            if (heatmap == null) continue;
-
-            string mapName = Path.GetFileNameWithoutExtension(file);
-
-            var configs = _tracker.heatMapConfigs;
-            if (configs == null) continue;
-
-            foreach (MapConfig config in configs)
-            {
-                if (config == null) continue;
-                if (config.mapName != mapName) continue;
-
-                _tracker.heatMapVisualizer.createTileMap(config);
-                _tracker.heatMapVisualizer.updateTileMap(heatmap, config);
-                break;
-            }
-        }
-    }
-
-    private void RefreshSessions()
-    {
-        _sessions.Clear();
-
-        _basePath = Path.GetFullPath(
-            Path.Combine(Application.dataPath, "heatMaps")
-        );
-
-        if (!Directory.Exists(_basePath))
-        {
-            Directory.CreateDirectory(_basePath);
+        HeatMap heatmap = HeatMapSerializer.LoadFromFile(file);
+        if (heatmap == null)
             return;
-        }
 
-        string[] dirs = Directory.GetDirectories(_basePath);
+        string mapName = Path.GetFileNameWithoutExtension(file);
 
-        foreach (string dir in dirs)
+        var configs = _tracker.heatMapConfigs;
+        if (configs == null)
+            return;
+
+        foreach (MapConfig config in configs)
         {
-            _sessions.Add(Path.GetFileName(dir));
+            if (config == null)
+                continue;
+
+            if (config.mapName != mapName)
+                continue;
+
+            string instanceKey =
+                _tracker.name + "_" +
+                config.mapName + "_" +
+                System.Guid.NewGuid().ToString();
+
+            _activeHeatmaps[instanceKey] = heatmap;
+
+            _tracker.heatMapVisualizer.createTileMap(config);
+            _tracker.heatMapVisualizer.updateTileMap(heatmap, config);
+
+            break;
         }
     }
 
@@ -154,10 +153,7 @@ public class HeatMapperVisualizerWindow : EditorWindow
     {
         EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
-        EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField(tracker.name, EditorStyles.boldLabel);
-        EditorGUILayout.EndHorizontal();
-
         EditorGUILayout.Space();
 
         if (tracker.heatMapConfigs == null)
@@ -169,7 +165,9 @@ public class HeatMapperVisualizerWindow : EditorWindow
 
         foreach (MapConfig config in tracker.heatMapConfigs)
         {
-            if (config == null) continue;
+            if (config == null)
+                continue;
+
             DrawHeatmapBlock(tracker, config);
         }
 
@@ -241,7 +239,7 @@ public class HeatMapperVisualizerWindow : EditorWindow
 
         var heatmaps = tracker.GetHeatMaps();
         if (heatmaps == null || !heatmaps.ContainsKey(config.mapName))
-            return "No live data (session view not implemented yet)";
+            return "No live data";
 
         HeatMap map = heatmaps[config.mapName];
 
@@ -268,6 +266,24 @@ public class HeatMapperVisualizerWindow : EditorWindow
             $"Occupied cells: {occupied}\n" +
             $"Max value: {max}\n" +
             $"Total value: {total}";
+    }
+
+    private void RefreshSessions()
+    {
+        _sessions.Clear();
+
+        _basePath = Path.Combine(Application.dataPath, "heatMaps");
+
+        if (!Directory.Exists(_basePath))
+        {
+            Directory.CreateDirectory(_basePath);
+            return;
+        }
+
+        foreach (string dir in Directory.GetDirectories(_basePath))
+        {
+            _sessions.Add(Path.GetFileName(dir));
+        }
     }
 
     private void RefreshTracker()
