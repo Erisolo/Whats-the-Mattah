@@ -2,11 +2,6 @@
 using UnityEditor;
 using UnityEngine;
 
-// HeatMapConfig; configuracion de cada heatmap
-// HeatMapData: Dato guardados de un heatmap
-// HeatMapCell: Informacion de una celda
-// HeatMapVisualizer: Dibuja los heatmaps en la escena
-
 // Ventana principal de la herramienta HeatMapper
 // Permite crear un HeatMapperTracker en la escena y configurar:
 // - Area de tracking
@@ -16,6 +11,7 @@ using UnityEngine;
 // - Objeto o input asocaido
 public class HeatMapper : EditorWindow {
 
+    // Posicion actual del scroll en la ventana. Permite desplazar la interfaz
     private Vector2 scrollPosition;
     private int _selectedMapType = 0;
 
@@ -51,6 +47,7 @@ public class HeatMapper : EditorWindow {
     private void OnGUI() {
         FindTrackerInScene();
 
+        // Crear una zona con scroll
         scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
 
         GUIStyle style = new GUIStyle(EditorStyles.boldLabel)
@@ -84,16 +81,19 @@ public class HeatMapper : EditorWindow {
         if (selectedTracker == null)
         {
             EditorGUILayout.HelpBox("Selecciona o crea un HeatMapperTracker para configurar la herramienta.", MessageType.Info);
+            
+            EditorGUILayout.EndScrollView();
             return;
         }
 
-
         EditorGUILayout.Space();
 
+        // Dibuja los ajustes generales del tracker
         HeatMapConfigDrawer.DrawTrackerSettings(selectedTracker);
 
         EditorGUILayout.Space();
 
+        // Dibuja la lista de heatmaps configurados
         HeatMapConfigDrawer.DrawHeatMapConfigs(selectedTracker);
 
         // Si se ha modificado algo en la ventana, se marca el tracker como modificado
@@ -105,53 +105,6 @@ public class HeatMapper : EditorWindow {
         }
 
         EditorGUILayout.EndScrollView();
-        //mapBaseName = EditorGUILayout.TextField("Base Name", mapBaseName);
-
-        //EditorGUILayout.Space();
-        //EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-
-        //EditorGUILayout.BeginHorizontal();
-
-        //if (GUILayout.Button("Add Map"))
-        //    AddMap();
-        //_selectedMapType = EditorGUILayout.Popup(
-        //    (int) _selectedMapType,
-        //    System.Enum.GetNames(typeof(TrackEventType))
-        //);
-
-        //EditorGUILayout.EndHorizontal();
-
-        //for (int i = _heatMapConfigs.Length - 1; i >= 0; i--)
-        //{
-        //    EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-        //    MapConfig m = _heatMapConfigs[i];
-
-        //    EditorGUILayout.Space();
-        //    EditorGUILayout.BeginHorizontal();
-        //    EditorGUILayout.LabelField(m.GetType().Name, EditorStyles.boldLabel);
-        //    bool deleted = GUILayout.Button("✕");
-        //    EditorGUILayout.EndHorizontal();
-            
-        //    if (deleted)
-        //    {
-        //        ArrayUtility.RemoveAt(ref _heatMapConfigs, i);
-        //        EditorGUILayout.EndVertical();
-        //        continue;
-        //    }
-
-        //    m.visible = EditorGUILayout.Toggle("Visible", m.visible);
-        //    m.mapName = EditorGUILayout.TextField("Map Name", m.mapName);
-        //    m.tr = EditorGUILayout.ObjectField("Transform to Register", m.tr, typeof(Transform), true) as Transform;
-        
-        //    EditorGUILayout.EndVertical();
-        //}
-
-        //EditorGUILayout.EndVertical();
-        //if (GUILayout.Button("AddMap")) {
-        //    _heatMapConfigs.Append<MapConfig>(new MapConfig());
-        //    //_heatMapConfigs = _heatMapConfigs.Append(new MapConfig()).ToArray();
-        //   // _heatMapConfigs.Add(new MapConfig());
-        //}
     }
 
     // Crea o recupera un objeto HeatMapperTracker en la escena 

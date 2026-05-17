@@ -53,7 +53,7 @@ public static class HeatMapConfigDrawer
         // Permitir la snspeccion de datos de una celda
         tracker.enableCellInspector = EditorGUILayout.Toggle("Enable Cell Inspector", tracker.enableCellInspector);
         // Activar informar solo los heatmaps visibles
-        tracker.showOnlyVisibleHeatMaps = EditorGUILayout.Toggle("Show Info Only Visible HeatMaps", tracker.showOnlyVisibleHeatMaps);
+        tracker.showOnlyVisibleHeatMaps = EditorGUILayout.Toggle("Show Only Visible HeatMaps", tracker.showOnlyVisibleHeatMaps);
 
         EditorGUILayout.Space();
 
@@ -120,8 +120,15 @@ public static class HeatMapConfigDrawer
 
             tracker.heatMapConfigs.Add(newConfig);
         }
+
+        if (GUI.changed)
+        {
+            EditorUtility.SetDirty(tracker);
+            SceneView.RepaintAll();
+        }
     }
 
+    // Dibuja los campos comunes a todos los eventos
     private static void DrawCommonFields(MapConfig config)
     {
         config.visible = EditorGUILayout.Toggle("Visible", config.visible);

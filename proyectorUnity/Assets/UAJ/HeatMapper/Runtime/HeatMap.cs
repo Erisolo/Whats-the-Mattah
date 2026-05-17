@@ -43,6 +43,26 @@ public class HeatMap {
         _heatMap[tile.x, tile.y] += value;
     }
 
+    // Devuelve el valor mas alto registrado en todo el heatmap
+    // Sirve para normalizar el valor de una celda concreta
+    public int GetMaxValue()
+    {
+        int maxValue = 0;
+
+        for (int x = 0; x < _width; x++)
+        {
+            for (int y = 0; y < _height; y++)
+            {
+                if(_heatMap[x, y] > maxValue)
+                {
+                    maxValue = _heatMap[x, y];
+                }
+            }
+        }
+
+        return maxValue;
+    }
+
     // Convierte una posicion del mundo a una celda del heatmap
     // El origen del mapa esta en la esquina superior izquierda:
     // - X crece hacia la derecha

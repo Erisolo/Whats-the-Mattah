@@ -193,10 +193,12 @@ public class HeatMapperTracker : MonoBehaviour
         }
     }
 
+    // Devuelve los heatmaps generados actualmente. Unicamente permite consultar, no modificar
     public IReadOnlyDictionary<string, HeatMap> GetHeatMaps() {
         return _heatMaps;
     }
 
+    // Devuelve la lista de configuraciones validas. Unicamente permite consultar, no modificar
     public IReadOnlyList<MapConfig> GetValidHeatMapConfigs()
     {
         return _validHeatMapConfigs;
@@ -362,7 +364,6 @@ public class HeatMapperTracker : MonoBehaviour
 
         if (_heatMaps == null || _heatMaps.Count == 0)
         {
-            info.Add("No hay heatmaps generados.");
             return info;
         }
 
@@ -388,6 +389,25 @@ public class HeatMapperTracker : MonoBehaviour
 
             int value = heatMap.GetHeatMapValue(cell.x, cell.y);
 
+            // Si el valor de la celda es 0, no se muestra informacion
+            if (value <= 0)
+            {
+                continue;
+            }
+
+            // Valor maximo del heatmap completo
+            int maxValue = heatMap.GetMaxValue();
+
+            // Porcentaje de calor de esta celda respecto a la celda con mas calor del heatmap
+            float normalizedValue = 0f;
+
+            if (maxValue > 0)
+            {
+                normalizedValue = (float)value / maxValue;
+            }
+
+            float percentage = normalizedValue * 100f;
+
             string targetName = "None";
 
             if (config.tr != null)
@@ -396,12 +416,12 @@ public class HeatMapperTracker : MonoBehaviour
             }
 
             string line =
-                $"Heatmap: {config.mapName}\n" +
+                $"{config.mapName}\n" +
                 $"Value: {value}\n" +
-                $"Visible: {config.visible}\n" +
-                $"Event Type: {config.eventType}\n" +
+                $"Heat: {percentage:F1}%\n" +
+                $"Event: {config.eventType}\n" +
                 $"Target: {targetName}";
-
+                
             info.Add(line);
         }
 

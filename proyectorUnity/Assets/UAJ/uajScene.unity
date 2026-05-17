@@ -201,7 +201,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 125869216}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -0.51, y: -0.51, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -298,7 +298,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 676738308}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.8, y: 0, z: 0}
+  m_LocalPosition: {x: 4.8, y: -0.51, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -546,33 +546,42 @@ MonoBehaviour:
   cellSize: 1
   showTrackingArea: 0
   showGrid: 1
-  showAreaEditor: 1
-  enableCellInspector: 0
+  showAreaEditor: 0
+  enableCellInspector: 1
   showOnlyVisibleHeatMaps: 1
   heatMapVisualizer: {fileID: 932327412}
   heatMapConfigs:
   - visible: 1
     mapName: HeatMap_0
     eventType: 0
-    color: {r: 0, g: 1, b: 0.053442955, a: 0.35}
-    tr: {fileID: 0}
+    color: {r: 1, g: 0.02934311, b: 0, a: 0.35}
+    tr: {fileID: 125869218}
     inputKey: 32
     mouseButton: 0
     transformList: []
     sampleInterval: 0.25
   - visible: 1
     mapName: HeatMap_1
-    eventType: 4
-    color: {r: 1, g: 0, b: 0, a: 0.35}
-    tr: {fileID: 0}
+    eventType: 0
+    color: {r: 0, g: 0.38974953, b: 1, a: 0.35}
+    tr: {fileID: 676738310}
+    inputKey: 32
+    mouseButton: 0
+    transformList: []
+    sampleInterval: 0.1
+  - visible: 1
+    mapName: HeatMap_2
+    eventType: 1
+    color: {r: 0, g: 1, b: 0.29045153, a: 0.35}
+    tr: {fileID: 125869218}
     inputKey: 32
     mouseButton: 0
     transformList: []
     sampleInterval: 0.25
   - visible: 1
-    mapName: HeatMap_2
-    eventType: 0
-    color: {r: 1, g: 0, b: 0, a: 0.35}
+    mapName: HeatMap_3
+    eventType: 2
+    color: {r: 1, g: 0, b: 0.9872489, a: 0.35}
     tr: {fileID: 0}
     inputKey: 32
     mouseButton: 0

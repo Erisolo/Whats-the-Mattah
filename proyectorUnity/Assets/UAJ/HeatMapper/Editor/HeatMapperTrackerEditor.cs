@@ -126,10 +126,14 @@ public class HeatMapperTrackerEditor : Editor
     {
         HeatMapperTracker tracker = (HeatMapperTracker)target;
 
+        // Reutiliza el mismo drawer que la ventana de la tool
+        // Asi el inpector y la ventana HeatMapper muestran los mismos campos
         HeatMapConfigDrawer.DrawTrackerSettings(tracker);
 
         EditorGUILayout.Space();
 
+        // Dibuja la configuracion de los heatmaps con campos especificos
+        // segun el tipo de evento seleccionado
         HeatMapConfigDrawer.DrawHeatMapConfigs(tracker);
     }
 }
