@@ -31,7 +31,7 @@ public class HeatMapper : EditorWindow {
     //private List<MapConfig> _heatMapConfigs = new List<MapConfig> ();
 
     // Aniade la ventana al menu superior de Unity. Tools > HeatMapper
-    [MenuItem("Tools/HeatMapper")]
+    [MenuItem("Tools/HeatMapper/Tracker", false, 0)]
     public static void ShowWindow() {
         //GetWindow(typeof(HeatMapper));
         HeatMapper window = GetWindow<HeatMapper>();

@@ -22,6 +22,7 @@ public class HeatmapVisualizer : MonoBehaviour {
             // pone los componentes
             Tilemap tilemap = tmGO.AddComponent<Tilemap>();
             TilemapRenderer tmRenderer = tmGO.AddComponent<TilemapRenderer>();
+            tmRenderer.material = new Material(Shader.Find("Sprites/Default"));
 
             // para k se pinte por encima de todo
             tmRenderer.sortingLayerName = "Heatmap";
