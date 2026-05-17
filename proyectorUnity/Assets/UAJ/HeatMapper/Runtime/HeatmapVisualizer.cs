@@ -22,18 +22,28 @@ public class HeatmapVisualizer : MonoBehaviour {
     public List<HeatMapCombineType> heatMapsToVisualize = new List<HeatMapCombineType>();
 
     //llamado cuando cambia algo en el editor (posiblemente los heatmaps)
-    public void OnValidate()
+#if UNITY_EDITOR
+    private void OnValidate()
     {
-        ClearTilemaps();
-        for (int i = 0; i < heatMapsToVisualize.Count; i++)
+        // Esto se ejecuta cuando cambias algo en el inspector (como el checkbox visible)
+        // Usa EditorApplication.delayCall para evitar problemas de ejecución
+        UnityEditor.EditorApplication.delayCall += () =>
         {
-            heatMapsToVisualize[i].RefreshHeatmaps();
-            heatMapsToVisualize[i].logicOperation();
-        }
+            if (this != null && _grid != null)
+            {
+                ClearTilemaps();
+                for (int i = 0; i < heatMapsToVisualize.Count; i++)
+                {
+                    heatMapsToVisualize[i].RefreshHeatmaps();
+                    heatMapsToVisualize[i].logicOperation();
+                }
 
-        createTileMaps();
-        Debug.Log("mapa creado");
+                createTileMaps();
+            }
+        };
     }
+#endif
+    
 
     public void createTileMaps()
     {
@@ -206,11 +216,24 @@ public class HeatmapVisualizer : MonoBehaviour {
 
     private void ClearTilemaps()
     {
-        foreach (Transform child in _grid.transform)
+        // Primero, limpiar las referencias del diccionario
+        _tilemaps.Clear();
+
+        // Eliminar todos los hijos del Grid
+        for (int i = _grid.transform.childCount - 1; i >= 0; i--)
         {
-            GameObject.Destroy(child.gameObject);
+            Transform child = _grid.transform.GetChild(i);
+            if (Application.isPlaying)
+                GameObject.Destroy(child.gameObject);
+            else
+                GameObject.DestroyImmediate(child.gameObject); // Importante para editor
         }
 
-        _tilemaps.Clear();
+        // Limpiar el Grid por si tiene referencias residuales
+        if (_grid != null && _grid.gameObject != null)
+        {
+            // Resetear posición del Grid si es necesario
+            _grid.transform.position = Vector3.zero;
+        }
     }
 }
